@@ -2115,9 +2115,11 @@
           gapSignEl.style.color = '#aaa';
         }
 
-        // Animate odometer (absolute gap value)
-        gapOdo.setOdometer(absGap, prevAbsGap);
-        prevAbsGap = absGap;
+        // Animate odometer (absolute gap value) only if value actually changed
+        if (prevAbsGap !== absGap) {
+          gapOdo.setOdometer(absGap, prevAbsGap);
+          prevAbsGap = absGap;
+        }
 
         // Push signed gap so it crosses zero baseline
         gapHistory.push({ t: Date.now(), v: gap });
@@ -2126,8 +2128,14 @@
         drawGapGraph();
       }
 
-      trackerA.setOnUpdate(updateGap);
-      trackerB.setOnUpdate(updateGap);
+      let gapDebounceTimer = null;
+      function scheduleGapUpdate() {
+        if (gapDebounceTimer) clearTimeout(gapDebounceTimer);
+        gapDebounceTimer = setTimeout(updateGap, 250);
+      }
+
+      trackerA.setOnUpdate(scheduleGapUpdate);
+      trackerB.setOnUpdate(scheduleGapUpdate);
 
       window._applyGapDigitColor = () => gapOdo.applyDigitColor();
       window._applyGapFont       = (f) => gapOdo.applyFont(f);
