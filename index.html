@@ -2551,6 +2551,10 @@
     initCustomSelect('type-a');
     initCustomSelect('type-b');
     initCustomSelect('opt-anim-style');
+    initCustomSelect('opt-font');
+    initCustomSelect('opt-gap-font');
+    initCustomSelect('opt-graph-theme');
+    initCustomSelect('opt-show-progress');
 
     /* ════════════════════════════════════════════════════════
        RESIZE
@@ -2636,6 +2640,19 @@
         }
 
         if (window._updateGap) window._updateGap();
+
+        // 4. Re-apply visual styling explicitly after layout restore
+        requestAnimationFrame(() => {
+          const font = document.getElementById('opt-font')?.value;
+          if (font) applyFontAll(font);
+          const gapFont = document.getElementById('opt-gap-font')?.value;
+          if (gapFont) applyGapFont(gapFont);
+          applyDigitColorAll();
+          const animStyle = document.getElementById('opt-anim-style')?.value;
+          if (animStyle) applyAnimStyle(animStyle);
+          const gapTextColor = document.getElementById('opt-gap-text-color')?.value;
+          if (gapTextColor && window._applyGapTextColor) window._applyGapTextColor(gapTextColor);
+        });
       } catch (e) {
         console.warn('Failed to load state from localStorage:', e);
       }
