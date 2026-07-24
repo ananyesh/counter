@@ -1,0 +1,2350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Counter Comparison</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Inter:wght@400;700&family=Outfit:wght@400;700&family=Montserrat:wght@400;700&family=Ubuntu:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --digit-h:   80px;
+      --odo-anim:  0.45s;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0f0f0f;
+      color: #fff;
+      font-family: 'Roboto', 'Arial', sans-serif;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    /* ── Top Controls ── */
+    #top-controls {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    #top-controls button {
+      padding: 8px 18px;
+      font-size: 0.9rem;
+      background: #272727;
+      color: #fff;
+      border: 1px solid #444;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #top-controls button:hover { background: #333; }
+
+    /* ── Comparison layout ── */
+    #compare-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    /* ── Tracker Block ── */
+    .tracker-block {
+      width: 100%;
+    }
+
+    /* ── Tracker search row ── */
+    .tracker-search {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .tracker-search select.native-select {
+      display: none !important;
+    }
+    .custom-select {
+      position: relative;
+      display: inline-block;
+      user-select: none;
+      font-size: 0.9rem;
+      z-index: 100;
+    }
+    .custom-select-trigger {
+      padding: 8px 30px 8px 12px;
+      border: 1px solid #333;
+      background: #1a1a1a;
+      color: #fff;
+      border-radius: 4px;
+      cursor: pointer;
+      min-width: 175px;
+      position: relative;
+      text-align: left;
+    }
+    .custom-select-trigger::after {
+      content: "";
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      border: 5px solid transparent;
+      border-top-color: #fff;
+      pointer-events: none;
+    }
+    .custom-select-options {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      margin-top: 4px;
+      border: 1px solid #333;
+      background: #1a1a1a;
+      border-radius: 4px;
+      overflow: hidden;
+      display: none;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      text-align: left;
+    }
+    .custom-select.open .custom-select-options {
+      display: block;
+    }
+    .custom-option {
+      padding: 8px 12px;
+      color: #ccc;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .custom-option:hover {
+      background: #333;
+      color: #fff;
+    }
+    .custom-option.selected {
+      background: #272727;
+      color: #fff;
+      font-weight: 500;
+    }
+    .tracker-search input[type="text"],
+    .tracker-search input[type="number"] {
+      padding: 8px 12px;
+      font-size: 1rem;
+      border: 1px solid #333;
+      background: #1a1a1a;
+      color: #fff;
+      border-radius: 4px;
+      width: 240px;
+      outline: none;
+    }
+    .tracker-search input:focus { border-color: #555; }
+    .tracker-search button {
+      padding: 8px 18px;
+      font-size: 0.9rem;
+      background: #272727;
+      color: #fff;
+      border: 1px solid #444;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .tracker-search button:hover { background: #333; }
+
+    /* ── Banner ── */
+    .banner-wrap {
+      max-width: 700px;
+      margin: 0 auto;
+      border-radius: 8px;
+      overflow: hidden;
+      display: none;
+    }
+    .banner-img {
+      width: 100%;
+      display: block;
+      object-fit: cover;
+      height: 120px;
+    }
+
+    /* ── PFP ── */
+    .pfp-wrap {
+      text-align: center;
+      display: none;
+      margin-top: -28px;
+      margin-bottom: 10px;
+    }
+    .pfp-img {
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #1a1a1a;
+      display: inline-block;
+      width: 80px;
+      height: 80px;
+    }
+
+    /* ── Entity name ── */
+    .entity-name {
+      text-align: center;
+      font-size: 1rem;
+      color: #aaa;
+      letter-spacing: 0.02em;
+      margin-bottom: 14px;
+      min-height: 1.2em;
+    }
+
+    /* ───────────────────────────────────────
+       ODOMETER — SocialBlade / HubSpot style
+       3-cycle strip so 9→0 always rolls UP
+    ─────────────────────────────────────── */
+    .odometer-wrap {
+      text-align: center;
+      margin-bottom: 24px;
+      position: relative;
+    }
+
+    /* EST badge — absolutely positioned so it never causes layout shift */
+    .est-badge {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      margin-top: 2px;
+      font-size: 0.7rem;
+      color: #666;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 500;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    .odometer-el {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: var(--digit-h);
+      overflow: hidden;
+      font-family: inherit;
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum" 1;
+    }
+
+    .odo-digit {
+      /* Exact SocialBlade digit ratio */
+      width: calc(var(--digit-h) * 0.58);
+      height: var(--digit-h);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .odo-strip {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      transition: top var(--odo-anim) cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    .odo-strip span {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: var(--digit-h);
+      font-size: calc(var(--digit-h) * 0.92);
+      font-weight: 700;
+      line-height: 1;
+      color: #fff;
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum" 1;
+    }
+
+    /* comma / thousand separator — SocialBlade exact spacing */
+    .odo-sep {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      width: calc(var(--digit-h) * 0.24);
+      height: var(--digit-h);
+      font-size: calc(var(--digit-h) * 0.92);
+      font-weight: 700;
+      color: #fff;
+      padding-bottom: calc(var(--digit-h) * 0.05);
+      margin: 0 2px;
+    }
+
+    /* ── Gain Stats ── */
+    .gain-stats-wrap {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      align-items: center;
+      margin: 0 auto 20px auto;
+    }
+    .gain-item {
+      width: 170px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .gain-val {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #11ff00;
+      font-family: inherit;
+      display: inline-block;
+    }
+
+    /* ── Graph ── */
+    .graph-wrap {
+      max-width: 700px;
+      margin-top: 0;
+      margin-left: auto;
+      margin-right: auto;
+      margin-bottom: 24px;
+    }
+    .line-canvas {
+      width: 100%;
+      background: #181818;
+      border: 1px solid #2a2a2a;
+      border-radius: 6px;
+      display: block;
+    }
+
+    /* ── Gap Section ── */
+    #gap-section {
+      text-align: center;
+      padding: 20px 0 10px;
+    }
+    #gap-hero-text {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      color: #ffffff;
+      margin-bottom: 6px;
+      min-height: 1.4rem;
+      font-family: inherit;
+    }
+    #gap-odo-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 12px;
+    }
+    #gap-sign {
+      font-size: calc(var(--digit-h) * 0.92);
+      font-weight: 700;
+      color: #ffffff;
+      line-height: var(--digit-h);
+      margin-right: 2px;
+      font-family: inherit;
+    }
+
+    /* ── Options ── */
+    #options {
+      max-width: 600px;
+      margin: 30px auto 20px auto;
+      background: #181818;
+      border: 1px solid #2a2a2a;
+      border-radius: 6px;
+      padding: 16px;
+    }
+    #options h2 {
+      font-size: 1rem;
+      color: #aaa;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+      border-bottom: 1px solid #2a2a2a;
+      padding-bottom: 8px;
+    }
+    .opt-section { margin-top: 12px; }
+    .opt-section-label {
+      font-size: 0.72rem;
+      color: #555;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 8px;
+      padding-top: 8px;
+      border-top: 1px solid #222;
+    }
+    .opt-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+    .opt-row label {
+      font-size: 0.82rem;
+      color: #999;
+      min-width: 150px;
+      flex-shrink: 0;
+    }
+    .opt-row input[type="range"] {
+      flex: 1;
+      min-width: 80px;
+      max-width: 180px;
+      accent-color: #555;
+    }
+    .opt-row select {
+      padding: 4px 6px;
+      background: #222;
+      color: #fff;
+      border: 1px solid #444;
+      border-radius: 3px;
+      font-size: 0.82rem;
+    }
+    /* OBS-safe color pickers */
+    .opt-row input[type="color"] {
+      width: 34px;
+      height: 26px;
+      border: 1px solid #555;
+      border-radius: 3px;
+      background: none;
+      cursor: pointer;
+      padding: 2px;
+      -webkit-appearance: none;
+    }
+    .opt-row input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+    .opt-row input[type="color"]::-webkit-color-swatch {
+      border: none;
+      border-radius: 2px;
+    }
+    .opt-hex {
+      width: 72px;
+      padding: 4px 6px;
+      font-size: 0.82rem;
+      font-family: 'Courier New', monospace;
+      background: #1a1a1a;
+      color: #ccc;
+      border: 1px solid #444;
+      border-radius: 3px;
+      outline: none;
+    }
+    .opt-num {
+      width: 58px;
+      padding: 4px 6px;
+      font-size: 0.82rem;
+      background: #1a1a1a;
+      color: #ccc;
+      border: 1px solid #444;
+      border-radius: 3px;
+      outline: none;
+      text-align: center;
+    }
+    .opt-num:focus { border-color: #555; color: #fff; }
+    /* hide spinner arrows */
+    .opt-num::-webkit-inner-spin-button,
+    .opt-num::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    .opt-num[type=number] { -moz-appearance: textfield; }
+    .opt-unit { font-size: 0.78rem; color: #555; }
+    /* ── Progress Bar ── */
+    .progress-wrap {
+      max-width: 700px;
+      margin: 0 auto 18px auto;
+      display: none;
+    }
+    .progress-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 5px;
+      font-size: 0.78rem;
+      color: #888;
+    }
+    .progress-label-row .progress-pct {
+      font-weight: 700;
+      color: #ccc;
+    }
+    .progress-label-row .progress-goal {
+      color: #666;
+    }
+    .progress-bar-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .progress-num {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #888;
+      white-space: nowrap;
+      min-width: 40px;
+    }
+    .progress-start { text-align: right; }
+    .progress-end { text-align: left; }
+    .progress-track {
+      flex: 1;
+      height: 8px;
+      background: #232323;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: #ffffff;
+      border-radius: 4px;
+      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      min-width: 2px;
+    }
+
+    /* ── Overtake Prediction ── */
+    #overtake-row {
+      text-align: center;
+      padding: 10px 0 4px;
+      font-size: 0.84rem;
+      color: #666;
+      min-height: 1.4em;
+    }
+    #overtake-row .overtake-label {
+      color: #555;
+      margin-right: 4px;
+    }
+    #overtake-row .overtake-val {
+      color: #ddd;
+      font-weight: 600;
+    }
+    #overtake-row .overtake-never {
+      color: #444;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Controls -->
+  <div id="top-controls">
+    <button id="hide-ui-btn" title="Hide UI controls (Press 'H' to toggle back)">Hide UI (H)</button>
+  </div>
+
+  <!-- Main Comparison Wrap -->
+  <div id="compare-wrap">
+
+    <!-- ═══════════════ TRACKER A ═══════════════ -->
+    <div class="tracker-block" id="tracker-a-block">
+      <div class="tracker-search" id="search-a">
+        <select id="type-a">
+          <option value="roblox">Roblox Group</option>
+          <option value="youtube">YouTube Channel (Mixerno)</option>
+          <option value="youtube-sctools">YouTube Channel (SCTools)</option>
+          <option value="tiktok">TikTok Account</option>
+          <option value="instagram">Instagram Account</option>
+          <option value="twitter">Twitter Account</option>
+        </select>
+        <input id="input-a" type="text" placeholder="Group ID or Channel ID" value="1074557114" />
+        <button id="track-btn-a">Track</button>
+        <button id="stop-btn-a" style="display:none">Stop</button>
+      </div>
+      <div class="banner-wrap" id="banner-wrap-a"><img class="banner-img" id="banner-img-a" src="" alt="" /></div>
+      <div class="pfp-wrap" id="pfp-wrap-a"><img class="pfp-img" id="pfp-img-a" src="" alt="" /></div>
+      <div class="entity-name" id="name-a"></div>
+      <div class="odometer-wrap" id="odometer-wrap-a">
+        <div class="odometer-el" id="odometer-a"></div>
+        <div class="est-badge" id="est-a">~ estimating</div>
+      </div>
+      <div class="gain-stats-wrap" id="gains-a">
+        <div class="gain-item" id="item-a-sec"><span class="gain-val" id="gain-a-sec">+0</span></div>
+        <div class="gain-item" id="item-a-min"><span class="gain-val" id="gain-a-min">+0</span></div>
+        <div class="gain-item" id="item-a-hr"><span class="gain-val" id="gain-a-hr">+0</span></div>
+        <div class="gain-item" id="item-a-day"><span class="gain-val" id="gain-a-day">+0</span></div>
+      </div>
+      <div class="graph-wrap" id="graph-wrap-a">
+        <canvas class="line-canvas" id="canvas-a" height="200"></canvas>
+      </div>
+      <div class="progress-wrap" id="progress-wrap-a">
+        <div class="progress-bar-row">
+          <span class="progress-num progress-start" id="progress-start-a">0</span>
+          <div class="progress-track"><div class="progress-fill" id="progress-fill-a" style="width:0%"></div></div>
+          <span class="progress-num progress-end" id="progress-end-a">0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ GAP SECTION ═══════════════ -->
+    <div id="gap-section">
+      <div id="gap-hero-text">—</div>
+      <div id="gap-odo-row">
+        <span id="gap-sign">+</span><div class="odometer-el" id="odometer-gap"></div>
+      </div>
+      <div id="overtake-row"></div>
+      <div class="graph-wrap" id="graph-wrap-gap" style="margin-top:10px">
+        <canvas class="line-canvas" id="canvas-gap" height="200"></canvas>
+      </div>
+    </div>
+
+    <!-- ═══════════════ TRACKER B ═══════════════ -->
+    <div class="tracker-block" id="tracker-b-block">
+      <div class="tracker-search" id="search-b">
+        <select id="type-b">
+          <option value="roblox">Roblox Group</option>
+          <option value="youtube" selected>YouTube Channel (Mixerno)</option>
+          <option value="youtube-sctools">YouTube Channel (SCTools)</option>
+          <option value="tiktok">TikTok Account</option>
+          <option value="instagram">Instagram Account</option>
+          <option value="twitter">Twitter Account</option>
+        </select>
+        <input id="input-b" type="text" placeholder="Group ID or Channel ID" value="UCppHT7SZKKvar4Oc9J4oljQ" />
+        <button id="track-btn-b">Track</button>
+        <button id="stop-btn-b" style="display:none">Stop</button>
+      </div>
+      <div class="banner-wrap" id="banner-wrap-b"><img class="banner-img" id="banner-img-b" src="" alt="" /></div>
+      <div class="pfp-wrap" id="pfp-wrap-b"><img class="pfp-img" id="pfp-img-b" src="" alt="" /></div>
+      <div class="entity-name" id="name-b"></div>
+      <div class="odometer-wrap" id="odometer-wrap-b">
+        <div class="odometer-el" id="odometer-b"></div>
+        <div class="est-badge" id="est-b">~ estimating</div>
+      </div>
+      <div class="gain-stats-wrap" id="gains-b">
+        <div class="gain-item" id="item-b-sec"><span class="gain-val" id="gain-b-sec">+0</span></div>
+        <div class="gain-item" id="item-b-min"><span class="gain-val" id="gain-b-min">+0</span></div>
+        <div class="gain-item" id="item-b-hr"><span class="gain-val" id="gain-b-hr">+0</span></div>
+        <div class="gain-item" id="item-b-day"><span class="gain-val" id="gain-b-day">+0</span></div>
+      </div>
+      <div class="graph-wrap" id="graph-wrap-b">
+        <canvas class="line-canvas" id="canvas-b" height="200"></canvas>
+      </div>
+      <div class="progress-wrap" id="progress-wrap-b">
+        <div class="progress-bar-row">
+          <span class="progress-num progress-start" id="progress-start-b">0</span>
+          <div class="progress-track"><div class="progress-fill" id="progress-fill-b" style="width:0%"></div></div>
+          <span class="progress-num progress-end" id="progress-end-b">0</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /compare-wrap -->
+
+  <!-- ═══════════════ OPTIONS PANEL ═══════════════ -->
+  <div id="options">
+    <h2>Options</h2>
+
+    <!-- Appearance -->
+    <div class="opt-section-label">Appearance</div>
+    <div class="opt-row">
+      <label>Background Color</label>
+      <input type="color" id="opt-bg" value="#0f0f0f" />
+      <input type="text" id="hex-bg" class="opt-hex" value="#0f0f0f" maxlength="7" />
+    </div>
+    <div class="opt-row">
+      <label>Digit Color</label>
+      <input type="color" id="opt-digit-color" value="#ffffff" />
+      <input type="text" id="hex-digit-color" class="opt-hex" value="#ffffff" maxlength="7" />
+    </div>
+    <div class="opt-row">
+      <label>Gap Text Color</label>
+      <input type="color" id="opt-gap-text-color" value="#ffffff" />
+      <input type="text" id="hex-gap-text-color" class="opt-hex" value="#ffffff" maxlength="7" />
+    </div>
+    <div class="opt-row">
+      <label>Font</label>
+      <select id="opt-font">
+        <option value="'Roboto', sans-serif" selected>Roboto (SocialBlade)</option>
+        <option value="'Inter', sans-serif">Inter (Modern Clean)</option>
+        <option value="'Outfit', sans-serif">Outfit (Premium Rounded)</option>
+        <option value="'Montserrat', sans-serif">Montserrat (Geometric)</option>
+        <option value="'Ubuntu', sans-serif">Ubuntu (Rounded)</option>
+        <option value="'Share Tech Mono', monospace">Share Tech Mono (Retro Cyber)</option>
+        <option value="'Arial', sans-serif">Arial</option>
+        <option value="'Courier New', monospace">Courier New</option>
+        <option value="'Georgia', serif">Georgia</option>
+        <option value="'Impact', sans-serif">Impact</option>
+        <option value="'Verdana', sans-serif">Verdana</option>
+        <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
+        <option value="'Times New Roman', serif">Times New Roman</option>
+        <option value="'Lucida Console', monospace">Lucida Console</option>
+      </select>
+    </div>
+    <div class="opt-row">
+      <label>Gap Font</label>
+      <select id="opt-gap-font">
+        <option value="'Roboto', sans-serif" selected>Roboto (SocialBlade)</option>
+        <option value="'Inter', sans-serif">Inter (Modern Clean)</option>
+        <option value="'Outfit', sans-serif">Outfit (Premium Rounded)</option>
+        <option value="'Montserrat', sans-serif">Montserrat (Geometric)</option>
+        <option value="'Ubuntu', sans-serif">Ubuntu (Rounded)</option>
+        <option value="'Share Tech Mono', monospace">Share Tech Mono (Retro Cyber)</option>
+        <option value="'Arial', sans-serif">Arial</option>
+        <option value="'Courier New', monospace">Courier New</option>
+        <option value="'Georgia', serif">Georgia</option>
+        <option value="'Impact', sans-serif">Impact</option>
+        <option value="'Verdana', sans-serif">Verdana</option>
+        <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
+        <option value="'Times New Roman', serif">Times New Roman</option>
+        <option value="'Lucida Console', monospace">Lucida Console</option>
+      </select>
+    </div>
+
+    <!-- Sizes -->
+    <div class="opt-section">
+      <div class="opt-section-label">Sizes</div>
+      <div class="opt-row">
+        <label>Odometer Size</label>
+        <input type="range" id="opt-odo-size" min="40" max="160" value="80" />
+        <input type="number" id="num-odo-size" class="opt-num" min="40" max="160" value="80" />
+        <span class="opt-unit">px</span>
+      </div>
+      <div class="opt-row">
+        <label>PFP Size</label>
+        <input type="range" id="opt-pfp-size" min="40" max="200" value="80" />
+        <input type="number" id="num-pfp-size" class="opt-num" min="40" max="200" value="80" />
+        <span class="opt-unit">px</span>
+      </div>
+      <div class="opt-row">
+        <label>Banner Height</label>
+        <input type="range" id="opt-banner-h" min="50" max="300" value="120" />
+        <input type="number" id="num-banner-h" class="opt-num" min="50" max="300" value="120" />
+        <span class="opt-unit">px</span>
+      </div>
+      <div class="opt-row">
+        <label>Graph Height</label>
+        <input type="range" id="opt-graph-h" min="80" max="500" value="200" />
+        <input type="number" id="num-graph-h" class="opt-num" min="80" max="500" value="200" />
+        <span class="opt-unit">px</span>
+      </div>
+      <div class="opt-row">
+        <label>Graph Width</label>
+        <input type="range" id="opt-graph-w" min="200" max="1400" value="700" />
+        <input type="number" id="num-graph-w" class="opt-num" min="200" max="1400" value="700" />
+        <span class="opt-unit">px</span>
+      </div>
+    </div>
+
+    <!-- Odometer -->
+    <div class="opt-section">
+      <div class="opt-section-label">Odometer</div>
+      <div class="opt-row">
+        <label>Animation Speed</label>
+        <input type="range" id="opt-anim" min="1" max="30" value="5" />
+        <input type="number" id="num-anim" class="opt-num" min="0.05" max="2" step="0.01" value="0.45" />
+        <span class="opt-unit">s</span>
+      </div>
+      <div class="opt-row">
+        <label>Refresh Interval</label>
+        <input type="range" id="opt-interval" min="1" max="30" value="5" />
+        <input type="number" id="num-interval" class="opt-num" min="1" max="30" value="5" />
+        <span class="opt-unit">s</span>
+      </div>
+    </div>
+
+    <!-- Graph -->
+    <div class="opt-section">
+      <div class="opt-section-label">Graph</div>
+      <div class="opt-row">
+        <label>Graph Theme</label>
+        <select id="opt-graph-theme">
+          <option value="light" selected>SocialBlade / Highcharts (Light)</option>
+          <option value="dark">YouTube Studio (Dark)</option>
+        </select>
+      </div>
+      <div class="opt-row">
+        <label>Graph Background</label>
+        <input type="color" id="opt-graph-bg" value="#ebebeb" />
+        <input type="text" id="hex-graph-bg" class="opt-hex" value="#ebebeb" maxlength="7" />
+      </div>
+      <div class="opt-row">
+        <label>Graph Line Color</label>
+        <input type="color" id="opt-graph-color" value="#b3382c" />
+        <input type="text" id="hex-graph-color" class="opt-hex" value="#b3382c" maxlength="7" />
+      </div>
+      <div class="opt-row">
+        <label>Gap Graph Background</label>
+        <input type="color" id="opt-gap-graph-bg" value="#ffffff" />
+        <input type="text" id="hex-gap-graph-bg" class="opt-hex" value="#ffffff" maxlength="7" />
+      </div>
+      <div class="opt-row">
+        <label>Gap Graph Line Color</label>
+        <input type="color" id="opt-gap-graph-color" value="#2196F3" />
+        <input type="text" id="hex-gap-graph-color" class="opt-hex" value="#2196F3" maxlength="7" />
+      </div>
+      <div class="opt-row">
+        <label>Graph Area Fill</label>
+        <select id="opt-graph-fill">
+          <option value="line" selected>Line Only</option>
+          <option value="filled">Gradient Area</option>
+        </select>
+      </div>
+      <div class="opt-row">
+        <label>Show Data Dots</label>
+        <select id="opt-graph-dots">
+          <option value="auto">Auto (Dark)</option>
+          <option value="hide" selected>Hide Dots</option>
+          <option value="show">Show Dots</option>
+        </select>
+      </div>
+      <div class="opt-row">
+        <label>Graph Data Points</label>
+        <input type="range" id="opt-points" min="5" max="24000" value="30" />
+        <input type="number" id="num-points" class="opt-num" min="5" max="24000" value="30" />
+      </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="opt-section">
+      <div class="opt-section-label">Progress Bar</div>
+      <div class="opt-row">
+        <label>Show Progress Bar</label>
+        <select id="opt-show-progress">
+          <option value="hide" selected>Hide (Default)</option>
+          <option value="show">Show</option>
+        </select>
+      </div>
+      <div class="opt-row">
+        <label>Progress Bar Color</label>
+        <input type="color" id="opt-progress-color" value="#ffffff" />
+        <input type="text" id="hex-progress-color" class="opt-hex" value="#ffffff" maxlength="7" />
+      </div>
+      <div class="opt-row">
+        <label>Progress Bar Height</label>
+        <input type="range" id="opt-progress-h" min="2" max="30" value="8" />
+        <input type="number" id="num-progress-h" class="opt-num" min="2" max="30" value="8" />
+        <span class="opt-unit">px</span>
+      </div>
+    </div>
+
+    <!-- Overtake Text -->
+    <div class="opt-section">
+      <div class="opt-section-label">Overtake Text</div>
+      <div class="opt-row">
+        <label>Overtake Font Size</label>
+        <input type="range" id="opt-overtake-size" min="10" max="36" value="14" />
+        <input type="number" id="num-overtake-size" class="opt-num" min="10" max="36" value="14" />
+        <span class="opt-unit">px</span>
+      </div>
+    </div>
+
+    <!-- Gains Display -->
+    <div class="opt-section">
+      <div class="opt-section-label">Gains Display</div>
+      <div class="opt-row">
+        <label>1s Gain</label>
+        <select id="opt-show-sec">
+          <option value="show" selected>Show</option>
+          <option value="hide">Hide</option>
+        </select>
+      </div>
+      <div class="opt-row">
+        <label>1m Gain</label>
+        <select id="opt-show-min">
+          <option value="show" selected>Show</option>
+          <option value="hide">Hide</option>
+        </select>
+      </div>
+      <div class="opt-row">
+        <label>1h Gain</label>
+        <select id="opt-show-hr">
+          <option value="show" selected>Show</option>
+          <option value="hide">Hide</option>
+        </select>
+      </div>
+      <div class="opt-row">
+        <label>24h Gain</label>
+        <select id="opt-show-day">
+          <option value="show" selected>Show</option>
+          <option value="hide">Hide</option>
+        </select>
+      </div>
+      <div class="opt-row">
+        <label>Gains Number Color</label>
+        <input type="color" id="opt-gain-color" value="#11ff00" />
+        <input type="text" id="hex-gain-color" class="opt-hex" value="#11ff00" maxlength="7" />
+      </div>
+      <div class="opt-row">
+        <label>Gains Font Size</label>
+        <input type="range" id="opt-gain-size" min="10" max="36" value="16" />
+        <input type="number" id="num-gain-size" class="opt-num" min="10" max="36" value="16" />
+        <span class="opt-unit">px</span>
+      </div>
+    </div>
+
+  </div><!-- /options -->
+
+  <script>
+    /* ════════════════════════════════════════════════════════
+       SHARED CONSTANTS & STATE
+    ════════════════════════════════════════════════════════ */
+    const CYCLES    = 3;
+    const CYCLE_LEN = 10;
+
+    let digitH        = 80;
+    let fetchInterval = 5000;
+    let maxPoints     = 30;
+
+    /* ════════════════════════════════════════════════════════
+       ODOMETER FACTORY
+       Creates a self-contained odometer inside `odoEl`.
+       Returns { buildOdometer, setOdometer, applyDigitColor, applyFont }
+    ════════════════════════════════════════════════════════ */
+    function createOdometer(odoEl) {
+      let columns      = [];
+      let colPositions = [];
+
+      function buildOdometer(digitCount) {
+        odoEl.innerHTML = '';
+        columns      = [];
+        colPositions = [];
+
+        for (let i = 0; i < digitCount; i++) {
+          const fromRight = digitCount - 1 - i;
+          const colIndex  = i;
+
+          const col   = document.createElement('div');
+          col.className = 'odo-digit';
+
+          const strip = document.createElement('div');
+          strip.className       = 'odo-strip';
+          strip.style.transition = 'none';
+
+          for (let c = 0; c < CYCLES; c++) {
+            for (let d = 0; d <= 9; d++) {
+              const s = document.createElement('span');
+              s.textContent = d;
+              strip.appendChild(s);
+            }
+          }
+
+          col.appendChild(strip);
+          odoEl.appendChild(col);
+          columns.push({ col, strip });
+
+          colPositions.push(CYCLE_LEN);
+          strip.style.top = `-${CYCLE_LEN * digitH}px`;
+
+          strip.addEventListener('transitionend', () => {
+            const curPos   = colPositions[colIndex];
+            const digit    = ((curPos % CYCLE_LEN) + CYCLE_LEN) % CYCLE_LEN;
+            const centered = CYCLE_LEN + digit;
+            if (centered === curPos) return;
+            strip.style.transition = 'none';
+            strip.style.top = `-${centered * digitH}px`;
+            colPositions[colIndex] = centered;
+          });
+
+          if (fromRight > 0 && fromRight % 3 === 0) {
+            const sep = document.createElement('div');
+            sep.className   = 'odo-sep';
+            sep.textContent = ',';
+            odoEl.appendChild(sep);
+          }
+        }
+        applyDigitColor();
+        const fontEl = document.getElementById('opt-font');
+        if (fontEl) applyFont(fontEl.value);
+      }
+
+      function setOdometer(newValue, oldValue) {
+        if (newValue === null || newValue === undefined || isNaN(newValue)) return;
+        const newStr    = String(Math.floor(newValue));
+        const newDigits = newStr.split('').map(Number);
+        const goingUp   = (oldValue === null) || (newValue >= oldValue);
+
+        if (columns.length !== newDigits.length) {
+          buildOdometer(newDigits.length);
+          newDigits.forEach((d, i) => {
+            const initPos = CYCLE_LEN + d;
+            colPositions[i] = initPos;
+            columns[i].strip.style.transition = 'none';
+            columns[i].strip.style.top = `-${initPos * digitH}px`;
+          });
+          odoEl.offsetHeight; // force reflow
+          return;
+        }
+
+        newDigits.forEach((d, i) => {
+          const { strip } = columns[i];
+          const oldAbsPos = colPositions[i];
+          const oldDigit  = oldAbsPos % CYCLE_LEN;
+          let delta;
+          if (goingUp) {
+            delta = (d >= oldDigit) ? (d - oldDigit) : (CYCLE_LEN - oldDigit + d);
+          } else {
+            delta = (d <= oldDigit) ? -(oldDigit - d) : -(oldDigit + CYCLE_LEN - d);
+          }
+          if (delta === 0) return;
+          const newAbsPos = oldAbsPos + delta;
+          colPositions[i] = newAbsPos;
+          strip.style.transition = '';
+          strip.style.top = `-${newAbsPos * digitH}px`;
+        });
+      }
+
+      function applyDigitColor() {
+        const c = document.getElementById('opt-digit-color').value;
+        odoEl.querySelectorAll('.odo-strip span, .odo-sep').forEach(el => { el.style.color = c; });
+      }
+
+      function applyFont(font) {
+        odoEl.style.fontFamily = font;
+        odoEl.querySelectorAll('.odo-strip span, .odo-sep').forEach(el => { el.style.fontFamily = font; });
+      }
+
+      function rebuildWithSize(newDigitH, savedCount) {
+        const count = columns.length || savedCount || 9;
+        buildOdometer(count);
+      }
+
+      return { buildOdometer, setOdometer, applyDigitColor, applyFont, rebuildWithSize, getColumns: () => columns, getPositions: () => colPositions };
+    }
+
+    /* ════════════════════════════════════════════════════════
+       GRAPH DRAW UTILITY (shared settings, per-canvas state)
+    ════════════════════════════════════════════════════════ */
+    function drawGraphOnCanvas(canvas, ctx, historyArr) {
+      const W = canvas.width;
+      const H = canvas.height;
+      const theme     = document.getElementById('opt-graph-theme').value;
+      const bgColor   = document.getElementById('opt-graph-bg').value;
+      const lineColor = document.getElementById('opt-graph-color').value;
+      const fillMode  = document.getElementById('opt-graph-fill').value;
+      const dotsMode  = document.getElementById('opt-graph-dots').value;
+
+      canvas.style.background = bgColor;
+      ctx.clearRect(0, 0, W, H);
+
+      if (historyArr.length < 2) return;
+
+      const slice = historyArr.slice(-maxPoints);
+      const vals  = slice.map(p => p.v);
+      const min   = Math.min(...vals);
+      const max   = Math.max(...vals);
+      const range = max - min || 1;
+
+      const isLight = (theme === 'light');
+
+      let maxLabelWidth = 0;
+      if (!isLight) {
+        ctx.font = '10px "Roboto", sans-serif';
+        for (let i = 0; i <= 3; i++) {
+          const lv = Math.round(max - (range / 3) * i).toLocaleString();
+          const w  = ctx.measureText(lv).width;
+          if (w > maxLabelWidth) maxLabelWidth = w;
+        }
+      }
+
+      const padL = 20;
+      const padR = isLight ? 20 : Math.max(55, Math.ceil(maxLabelWidth) + 16);
+      const padT = 16;
+      const padB = 28;
+      const gW   = W - padL - padR;
+      const gH   = H - padT - padB;
+      const axisY = padT + gH;
+
+      if (!isLight) {
+        ctx.strokeStyle = '#242424';
+        ctx.lineWidth   = 1;
+        for (let i = 0; i <= 3; i++) {
+          const y = padT + (gH / 3) * i;
+          ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
+          const lv = max - (range / 3) * i;
+          ctx.fillStyle = '#888';
+          ctx.font      = '10px "Roboto", sans-serif';
+          ctx.textAlign = 'right';
+          ctx.fillText(Math.round(lv).toLocaleString(), W - 8, y + 4);
+        }
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth   = 1;
+        ctx.beginPath();
+        ctx.moveTo(padL, axisY);
+        ctx.lineTo(W - padR, axisY);
+        ctx.stroke();
+      } else {
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth   = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(padL, axisY);
+        ctx.lineTo(W - padR, axisY);
+        ctx.stroke();
+      }
+
+      if (fillMode === 'filled') {
+        ctx.beginPath();
+        slice.forEach((p, i) => {
+          const x = padL + (i / (slice.length - 1)) * gW;
+          const y = padT + gH - ((p.v - min) / range) * gH;
+          i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        });
+        ctx.lineTo(padL + gW, padT + gH);
+        ctx.lineTo(padL, padT + gH);
+        ctx.closePath();
+        ctx.fillStyle = lineColor + '28';
+        ctx.fill();
+      }
+
+      ctx.beginPath();
+      ctx.strokeStyle = lineColor;
+      ctx.lineWidth   = 2;
+      ctx.lineJoin    = 'round';
+      slice.forEach((p, i) => {
+        const x = padL + (i / (slice.length - 1)) * gW;
+        const y = padT + gH - ((p.v - min) / range) * gH;
+        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+
+      const showDots = (dotsMode === 'show') || (dotsMode === 'auto' && slice.length <= 200 && isLight);
+      if (showDots) {
+        ctx.fillStyle = lineColor;
+        slice.forEach((p, i) => {
+          const x = padL + (i / (slice.length - 1)) * gW;
+          const y = padT + gH - ((p.v - min) / range) * gH;
+          ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI * 2); ctx.fill();
+        });
+      }
+
+      // X-axis time labels and grid lines based on absolute timestamps
+      if (slice.length >= 2) {
+        const minTime = slice[0].t;
+        const maxTime = slice[slice.length - 1].t;
+        const duration = maxTime - minTime;
+        const timeRange = duration || 1;
+
+        let interval = 1000;
+        const seconds = duration / 1000;
+        if (seconds <= 15) {
+          interval = 2 * 1000;
+        } else if (seconds <= 30) {
+          interval = 5 * 1000;
+        } else if (seconds <= 90) {
+          interval = 10 * 1000;
+        } else if (seconds <= 180) {
+          interval = 30 * 1000;
+        } else if (seconds <= 360) {
+          interval = 60 * 1000;
+        } else if (seconds <= 720) {
+          interval = 2 * 60 * 1000;
+        } else if (seconds <= 1800) {
+          interval = 5 * 60 * 1000;
+        } else if (seconds <= 3600) {
+          interval = 10 * 60 * 1000;
+        } else if (seconds <= 10800) {
+          interval = 30 * 60 * 1000;
+        } else {
+          interval = 60 * 60 * 1000;
+        }
+
+        const startGridTime = Math.ceil(minTime / interval) * interval;
+        ctx.font = '10px "Roboto", sans-serif';
+        ctx.textAlign = 'center';
+
+        for (let t = startGridTime; t <= maxTime; t += interval) {
+          const x = padL + ((t - minTime) / timeRange) * gW;
+
+          // Draw axis tick mark
+          ctx.strokeStyle = isLight ? '#555' : '#444';
+          ctx.beginPath();
+          ctx.moveTo(x, axisY);
+          ctx.lineTo(x, axisY + 4);
+          ctx.stroke();
+
+          // Format time label
+          const date = new Date(t);
+          const labelText = date.getHours().toString().padStart(2, '0') + ':' +
+                            date.getMinutes().toString().padStart(2, '0') + ':' +
+                            date.getSeconds().toString().padStart(2, '0');
+
+          ctx.fillStyle = '#888';
+          ctx.fillText(labelText, x, H - padB + 16);
+        }
+      }
+    }
+
+    /* ════════════════════════════════════════════════════════
+       API FETCH — Roblox & YouTube
+    ════════════════════════════════════════════════════════ */
+    async function fetchRoblox(groupId) {
+      const res  = await fetch(`https://mixerno.space/api/roblox-group-counter/user/${groupId}`, { cache: 'no-store' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      const countObj  = data.counts && data.counts.find(c => c.value === 'members');
+      const nameObj   = data.user   && data.user.find(u => u.value === 'name');
+      const pfpObj    = data.user   && data.user.find(u => u.value === 'pfp');
+      const bannerObj = data.user   && data.user.find(u => u.value === 'banner');
+      return {
+        count:  countObj  ? Number(countObj.count) : null,
+        name:   nameObj   ? nameObj.count           : '',
+        pfp:    pfpObj    ? pfpObj.count            : '',
+        banner: bannerObj ? bannerObj.count         : '',
+      };
+    }
+
+    async function fetchYoutube(channelId) {
+      const res  = await fetch(`https://backend.mixerno.space/api/youtube/estv3/${channelId}`, { cache: 'no-store' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      if (!data.items || !data.items.length) throw new Error('No items');
+      const item = data.items[0];
+      const count  = item.statistics  && item.statistics.subscriberCount  ? Number(item.statistics.subscriberCount)             : null;
+      const name   = item.snippet     && item.snippet.title               ? item.snippet.title                                    : '';
+      const pfp    = item.snippet     && item.snippet.thumbnails          ? (item.snippet.thumbnails.default?.url || '')          : '';
+      const banner = item.brandingSettings && item.brandingSettings.image ? item.brandingSettings.image                          : '';
+      return { count, name, pfp, banner };
+    }
+
+    async function fetchYoutubeSctools(channelId) {
+      let cleanId = channelId.trim();
+      const sctoolsReq = fetch(`https://ests.sctools.org/api/get/${cleanId}`, { cache: 'no-store' });
+      const mixernoReq = fetch(`https://backend.mixerno.space/api/youtube/estv3/${cleanId}`, { cache: 'no-store' }).catch(() => null);
+
+      const res = await sctoolsReq;
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      if (!data || !data.stats) throw new Error('Invalid data');
+
+      const count = data.stats.estCount !== undefined ? Number(data.stats.estCount) : (data.stats.apiCount !== undefined ? Number(data.stats.apiCount) : null);
+      const name = data.info?.name || cleanId;
+      const pfp = data.info?.avatar || '';
+
+      let banner = '';
+      try {
+        const mixernoRes = await mixernoReq;
+        if (mixernoRes && mixernoRes.ok) {
+          const mixernoData = await mixernoRes.json();
+          if (mixernoData.items && mixernoData.items.length) {
+            const item = mixernoData.items[0];
+            banner = item.brandingSettings?.image || '';
+          }
+        }
+      } catch (_) {}
+
+      return { count, name, pfp, banner };
+    }
+
+    async function fetchTiktok(username) {
+      let cleanUsername = username.trim();
+      if (cleanUsername.startsWith('@')) cleanUsername = cleanUsername.slice(1);
+      const urlMatch = cleanUsername.match(/tiktok\.com\/@([a-zA-Z0-9_\.]+)/i);
+      if (urlMatch) cleanUsername = urlMatch[1];
+
+      const res  = await fetch(`https://mixerno.space/api/tiktok-user-counter/user/${cleanUsername}`, { cache: 'no-store' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      const countObj  = data.counts && data.counts.find(c => c.value === 'followers');
+      const nameObj   = data.user   && data.user.find(u => u.value === 'name');
+      const pfpObj    = data.user   && data.user.find(u => u.value === 'pfp');
+      const bannerObj = data.user   && data.user.find(u => u.value === 'banner');
+      return {
+        count:  countObj  ? Number(countObj.count) : null,
+        name:   nameObj   ? nameObj.count           : '',
+        pfp:    pfpObj    ? pfpObj.count            : '',
+        banner: bannerObj ? bannerObj.count         : '',
+      };
+    }
+
+    async function fetchInstagram(userId) {
+      let cleanId = userId.trim();
+      const url = `https://api-v2.nextcounts.com/api/instagram/user/stats/${cleanId}`;
+      const res = await fetch(url, { cache: 'no-store' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      if (!data || data.success === false) throw new Error('API returned success=false');
+      
+      let count = data.followers !== undefined ? Number(data.followers) : null;
+      let name = data.username || null;
+      let pfp = data.avatar || '';
+
+      if (count === null || !name) {
+        const user = data.data?.xig_user_by_igid_v2?.user_dict || {};
+        if (count === null) count = Number(user.follower_count || 0);
+        if (!name) name = user.username || cleanId;
+        if (!pfp) pfp = user.profile_pic_url || '';
+      }
+
+      return {
+        count: count,
+        name: name,
+        pfp: pfp,
+        banner: ''
+      };
+    }
+
+    async function fetchTwitter(username) {
+      let cleanUsername = username.trim();
+      if (cleanUsername.startsWith('@')) cleanUsername = cleanUsername.slice(1);
+      const url = `https://api-v2.nextcounts.com/api/twitter/user/stats/${cleanUsername}`;
+      const res = await fetch(url, { cache: 'no-store' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      if (!data || data.success === false || data.followers === undefined) throw new Error('Invalid data');
+      
+      const count = Number(data.followers);
+      const name = cleanUsername;
+      const pfp = `https://unavatar.io/twitter/${cleanUsername}`;
+      return {
+        count: count,
+        name: name,
+        pfp: pfp,
+        banner: ''
+      };
+    }
+
+    /* ════════════════════════════════════════════════════════
+       TRACKER FACTORY
+       Creates a fully self-contained tracker with its own state.
+    ════════════════════════════════════════════════════════ */
+    function createTracker(cfg) {
+      // cfg: { id, typeSelectId, inputId, trackBtnId, stopBtnId,
+      //         bannerWrapId, bannerImgId, pfpWrapId, pfpImgId,
+      //         nameId, odoWrapId, odoElId, estBadgeId,
+      //         gainWrapId, gainSecId, gainMinId, gainHrId, gainDayId,
+      //         canvasId, graphWrapId }
+
+      // ── DOM refs ──
+      const typeSelect = document.getElementById(cfg.typeSelectId);
+      const inputEl    = document.getElementById(cfg.inputId);
+      const trackBtn   = document.getElementById(cfg.trackBtnId);
+      const stopBtn    = document.getElementById(cfg.stopBtnId);
+      const bannerWrap = document.getElementById(cfg.bannerWrapId);
+      const bannerImg  = document.getElementById(cfg.bannerImgId);
+      const pfpWrap    = document.getElementById(cfg.pfpWrapId);
+      const pfpImg     = document.getElementById(cfg.pfpImgId);
+      const nameEl     = document.getElementById(cfg.nameId);
+      const estBadge   = document.getElementById(cfg.estBadgeId);
+      const odoEl      = document.getElementById(cfg.odoElId);
+      const canvas     = document.getElementById(cfg.canvasId);
+      const ctx        = canvas.getContext('2d');
+
+      // ── Odometer instance ──
+      const odo = createOdometer(odoEl);
+
+      // ── State ──
+      let currentCount  = null;
+      let history       = [];
+      let realHistory   = [];
+      let lastRealCount = null;
+      let lastRealTime  = null;
+      let growthRate    = 0;
+      let trackedId     = null;
+      let trackedType   = 'roblox';
+      let fetchTimer    = null;
+      let isFetching    = false;
+      let fetchGen      = 0;
+      let onUpdateCb    = null;  // called after each tick with new count
+      let lastPfpUrl    = '';
+      let lastBannerUrl = '';
+
+      function setEstMode(on) { estBadge.style.display = on ? 'block' : 'none'; }
+
+      // ── Graph draw ──
+      function drawGraph() { drawGraphOnCanvas(canvas, ctx, history); }
+      function resizeCanvas() { canvas.width = canvas.offsetWidth; drawGraph(); }
+
+      // ── Gain stats ──
+      function calculateRollingGains() {
+        if (history.length < 2 || currentCount === null) return { sec: 0, min: 0, hr: 0, day: 0 };
+        const now = Date.now();
+        const latestVal = currentCount;
+
+        function getGainForWindow(msWindow) {
+          const targetTime = now - msWindow;
+          let pastPoint = history[0];
+          for (let i = history.length - 1; i >= 0; i--) {
+            if (history[i].t <= targetTime) { pastPoint = history[i]; break; }
+          }
+          return latestVal - pastPoint.v;
+        }
+
+        return {
+          sec: latestVal - history[history.length - 2].v,
+          min: getGainForWindow(60 * 1000),
+          hr:  getGainForWindow(60 * 60 * 1000),
+          day: getGainForWindow(24 * 60 * 60 * 1000),
+        };
+      }
+
+      function updateGainStats() {
+        const { sec, min, hr, day } = calculateRollingGains();
+        function fmt(n) {
+          if (n > 0) return '+' + n.toLocaleString();
+          if (n < 0) return n.toLocaleString();
+          return '+0';
+        }
+        const elSec = document.getElementById(cfg.gainSecId);
+        const elMin = document.getElementById(cfg.gainMinId);
+        const elHr  = document.getElementById(cfg.gainHrId);
+        const elDay = document.getElementById(cfg.gainDayId);
+        if (elSec) elSec.textContent = fmt(sec);
+        if (elMin) elMin.textContent = fmt(min);
+        if (elHr)  elHr.textContent  = fmt(hr);
+        if (elDay) elDay.textContent = fmt(day);
+      }
+
+      // ── API tick ──
+      async function tick() {
+        try {
+          let fetchFn;
+          if (trackedType === 'youtube') {
+            fetchFn = fetchYoutube;
+          } else if (trackedType === 'youtube-sctools') {
+            fetchFn = fetchYoutubeSctools;
+          } else if (trackedType === 'tiktok') {
+            fetchFn = fetchTiktok;
+          } else if (trackedType === 'instagram') {
+            fetchFn = fetchInstagram;
+          } else if (trackedType === 'twitter') {
+            fetchFn = fetchTwitter;
+          } else {
+            fetchFn = fetchRoblox;
+          }
+          const { count, name, pfp, banner } = await fetchFn(trackedId);
+
+          if (!count || isNaN(count)) {
+            if (lastRealCount !== null && lastRealTime !== null) {
+              const elapsedSec = (Date.now() - lastRealTime) / 1000;
+              const estimated  = Math.round(lastRealCount + growthRate * elapsedSec);
+              const safe       = Math.max(0, estimated);
+              if (safe !== currentCount) {
+                odo.setOdometer(safe, currentCount);
+                currentCount = safe;
+                history.push({ t: Date.now(), v: safe });
+                if (history.length > 24000) history.shift();
+                drawGraph();
+                updateGainStats();
+                if (onUpdateCb) onUpdateCb(currentCount);
+              }
+              setEstMode(true);
+            }
+            return;
+          }
+
+          setEstMode(false);
+          if (name) nameEl.textContent = name;
+
+          // Banner logic with dynamic gradients for accounts without banners
+          if (banner) {
+            if (lastBannerUrl !== banner) {
+              lastBannerUrl = banner;
+              bannerImg.src = banner;
+              bannerImg.style.display = 'block';
+            }
+            bannerImg.style.height = document.getElementById('opt-banner-h').value + 'px';
+            bannerWrap.style.display = 'block';
+            bannerWrap.style.background = '';
+          } else {
+            lastBannerUrl = '';
+            bannerImg.src = '';
+            bannerImg.style.display = 'none';
+            bannerWrap.style.display = 'block';
+            bannerWrap.style.height = document.getElementById('opt-banner-h').value + 'px';
+            
+            // Set dynamic background gradient
+            if (trackedType === 'instagram') {
+              bannerWrap.style.background = 'linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)';
+            } else if (trackedType === 'tiktok') {
+              bannerWrap.style.background = 'linear-gradient(135deg, #010101 0%, #fe0979 50%, #00f2fe 100%)';
+            } else if (trackedType === 'youtube' || trackedType === 'youtube-sctools') {
+              bannerWrap.style.background = 'linear-gradient(135deg, #2b0000 0%, #8b0000 100%)';
+            } else if (trackedType === 'twitter') {
+              bannerWrap.style.background = 'linear-gradient(135deg, #1DA1F2 0%, #0d8ecf 100%)';
+            } else {
+              bannerWrap.style.background = 'linear-gradient(135deg, #111 0%, #333 100%)';
+            }
+          }
+
+          // PFP logic avoiding network reloads
+          if (pfp) {
+            if (lastPfpUrl !== pfp) {
+              lastPfpUrl = pfp;
+              pfpImg.src = pfp;
+            }
+            pfpWrap.style.display = 'block';
+          } else {
+            lastPfpUrl = '';
+            pfpImg.src = '';
+            pfpWrap.style.display = 'none';
+          }
+
+          odo.setOdometer(count, currentCount);
+          currentCount = count;
+
+          lastRealCount = count;
+          lastRealTime  = Date.now();
+          realHistory.push({ t: lastRealTime, v: count });
+          if (realHistory.length > 10) realHistory.shift();
+          if (realHistory.length >= 2) {
+            const oldest  = realHistory[0];
+            const newest  = realHistory[realHistory.length - 1];
+            const secDiff = (newest.t - oldest.t) / 1000;
+            if (secDiff > 0) growthRate = (newest.v - oldest.v) / secDiff;
+          }
+
+          history.push({ t: Date.now(), v: count });
+          if (history.length > 24000) history.shift();
+          drawGraph();
+          updateGainStats();
+          if (onUpdateCb) onUpdateCb(currentCount);
+        } catch (_) {
+          // silent
+        }
+      }
+
+      // ── Tracking loop ──
+      function scheduleNextFetch(gen) {
+        if (!trackedId || gen !== fetchGen) return;
+        fetchTimer = setTimeout(() => runFetch(gen), fetchInterval);
+      }
+
+      async function runFetch(gen) {
+        fetchTimer = null;
+        if (!trackedId || gen !== fetchGen || isFetching) return;
+        isFetching = true;
+        try { await tick(); } catch (_) {}
+        isFetching = false;
+        scheduleNextFetch(gen);
+      }
+
+      function startTracking() {
+        const id = inputEl.value.trim();
+        if (!id) return;
+        stopTracking();
+        currentCount  = null;
+        history       = [];
+        realHistory   = [];
+        lastRealCount = null;
+        lastRealTime  = null;
+        growthRate    = 0;
+        nameEl.textContent     = '';
+        bannerWrap.style.display = 'none';
+        pfpWrap.style.display    = 'none';
+        lastPfpUrl               = '';
+        lastBannerUrl            = '';
+        trackBtn.style.display  = 'none';
+        stopBtn.style.display   = 'inline-block';
+        setEstMode(false);
+        trackedId   = id;
+        trackedType = typeSelect.value;
+        const gen = ++fetchGen;
+        runFetch(gen);
+      }
+
+      function stopTracking() {
+        ++fetchGen;
+        trackedId  = null;
+        isFetching = false;
+        if (fetchTimer) { clearTimeout(fetchTimer); fetchTimer = null; }
+        trackBtn.style.display = 'inline-block';
+        stopBtn.style.display  = 'none';
+      }
+
+      // ── Event listeners ──
+      trackBtn.addEventListener('click', startTracking);
+      stopBtn.addEventListener('click', stopTracking);
+      inputEl.addEventListener('keydown', e => { if (e.key === 'Enter') startTracking(); });
+
+      function updatePlaceholder() {
+        const val = typeSelect.value;
+        if (val === 'youtube' || val === 'youtube-sctools') {
+          inputEl.placeholder = "Channel ID";
+        } else if (val === 'roblox') {
+          inputEl.placeholder = "Group ID";
+        } else if (val === 'tiktok') {
+          inputEl.placeholder = "Username (e.g. lamine.yamal)";
+        } else if (val === 'instagram') {
+          inputEl.placeholder = "User ID (e.g. 4192705782)";
+        } else if (val === 'twitter') {
+          inputEl.placeholder = "Username (e.g. elonmusk)";
+        }
+      }
+      typeSelect.addEventListener('change', updatePlaceholder);
+      updatePlaceholder();
+
+      // ── Init odometer ──
+      odo.buildOdometer(9);
+      resizeCanvas();
+
+      // ── Expose for global controls ──
+      return {
+        drawGraph,
+        resizeCanvas,
+        odo,
+        canvas,
+        getHistory: () => history,
+        getPfpImg: () => pfpImg,
+        getBannerImg: () => bannerImg,
+        getCurrentCount: () => currentCount,
+        getColumns: () => odo.getColumns(),
+        getPositions: () => odo.getPositions(),
+        getRescheduleFetch: (gen) => scheduleNextFetch(gen),
+        getFetchGen: () => fetchGen,
+        getTrackedId: () => trackedId,
+        getFetchTimer: () => fetchTimer,
+        setFetchTimer: (t) => fetchTimer = t,
+        setOnUpdate: (fn) => { onUpdateCb = fn; },
+        reschedule: () => {
+          if (trackedId && fetchTimer) {
+            clearTimeout(fetchTimer);
+            scheduleNextFetch(fetchGen);
+          }
+        }
+      };
+
+    }
+
+    /* ════════════════════════════════════════════════════════
+       INIT TRACKERS
+    ════════════════════════════════════════════════════════ */
+    const trackerA = createTracker({
+      typeSelectId: 'type-a',
+      inputId:      'input-a',
+      trackBtnId:   'track-btn-a',
+      stopBtnId:    'stop-btn-a',
+      bannerWrapId: 'banner-wrap-a',
+      bannerImgId:  'banner-img-a',
+      pfpWrapId:    'pfp-wrap-a',
+      pfpImgId:     'pfp-img-a',
+      nameId:       'name-a',
+      odoElId:      'odometer-a',
+      estBadgeId:   'est-a',
+      gainSecId:    'gain-a-sec',
+      gainMinId:    'gain-a-min',
+      gainHrId:     'gain-a-hr',
+      gainDayId:    'gain-a-day',
+      canvasId:     'canvas-a',
+      graphWrapId:  'graph-wrap-a',
+    });
+
+    const trackerB = createTracker({
+      typeSelectId: 'type-b',
+      inputId:      'input-b',
+      trackBtnId:   'track-btn-b',
+      stopBtnId:    'stop-btn-b',
+      bannerWrapId: 'banner-wrap-b',
+      bannerImgId:  'banner-img-b',
+      pfpWrapId:    'pfp-wrap-b',
+      pfpImgId:     'pfp-img-b',
+      nameId:       'name-b',
+      odoElId:      'odometer-b',
+      estBadgeId:   'est-b',
+      gainSecId:    'gain-b-sec',
+      gainMinId:    'gain-b-min',
+      gainHrId:     'gain-b-hr',
+      gainDayId:    'gain-b-day',
+      canvasId:     'canvas-b',
+      graphWrapId:  'graph-wrap-b',
+    });
+
+    const allTrackers = [trackerA, trackerB];
+
+    /* ════════════════════════════════════════════════════════
+       GAP ODOMETER & GRAPH  (shows A − B live)
+    ════════════════════════════════════════════════════════ */
+    (function () {
+      const gapHeroEl  = document.getElementById('gap-hero-text');
+      const gapSignEl  = document.getElementById('gap-sign');
+      const gapOdoEl   = document.getElementById('odometer-gap');
+      const gapCanvas  = document.getElementById('canvas-gap');
+      const gapCtx     = gapCanvas.getContext('2d');
+      const gapOdo     = createOdometer(gapOdoEl);
+      gapOdo.buildOdometer(9);
+      // Init canvas width after layout is done
+      requestAnimationFrame(() => { gapCanvas.width = gapCanvas.offsetWidth || 700; });
+
+      let gapHistory   = [];
+      let prevAbsGap   = null;
+
+      function drawGapGraph() {
+        // Always re-measure so the bitmap matches the rendered width
+        const offW = gapCanvas.offsetWidth;
+        if (offW > 0) gapCanvas.width = offW;
+        const W = gapCanvas.width;
+        const H = gapCanvas.height;
+        if (!W || !H) return;
+
+        // Background
+        const gapBg = document.getElementById('opt-gap-graph-bg').value;
+        gapCtx.clearRect(0, 0, W, H);
+        gapCanvas.style.background = gapBg;
+
+        // Set padL to 60 to give space for labels like -10,000
+        const padL = 60, padR = 20, padT = 20, padB = 32;
+        const gW = W - padL - padR;
+        const gH = H - padT - padB;
+
+        if (gapHistory.length < 2) return;
+
+        const slice = gapHistory.slice(-maxPoints);
+        const vals  = slice.map(p => p.v);
+        const dataMax = Math.max(...vals);
+        const dataMin = Math.min(...vals);
+
+        const rangeMax = dataMax;
+        const rangeMin = dataMin;
+        const range    = rangeMax - rangeMin || 1;
+
+        function toY(v) {
+          return padT + gH - ((v - rangeMin) / range) * gH;
+        }
+
+        // Draw horizontal grid lines and Y-labels with priority-based overlap filtering
+        const rawLevels = [Math.round(rangeMax)];
+        const crossesZero = (rangeMin <= 0 && rangeMax >= 0);
+
+        if (crossesZero) {
+          rawLevels.push(0);
+          if (rangeMax > 0) rawLevels.push(Math.round(rangeMax / 2));
+          if (rangeMin < 0) rawLevels.push(Math.round(rangeMin / 2));
+        } else {
+          const step = range / 3;
+          rawLevels.push(Math.round(rangeMin + step));
+          rawLevels.push(Math.round(rangeMin + 2 * step));
+        }
+        rawLevels.push(Math.round(rangeMin));
+
+        // Prioritized list to decide which labels to keep if they overlap (closer than 16px)
+        const priorityQueue = [0, Math.round(rangeMax), Math.round(rangeMin)];
+        if (crossesZero) {
+          if (rangeMax > 0) priorityQueue.push(Math.round(rangeMax / 2));
+          if (rangeMin < 0) priorityQueue.push(Math.round(rangeMin / 2));
+        } else {
+          const step = range / 3;
+          priorityQueue.push(Math.round(rangeMin + step));
+          priorityQueue.push(Math.round(rangeMin + 2 * step));
+        }
+
+        const accepted = [];
+        const minDistancePx = 16;
+
+        priorityQueue.forEach(v => {
+          if (!rawLevels.some(rl => rl === v)) return;
+          
+          const y = toY(v);
+          const tooClose = accepted.some(keptVal => Math.abs(toY(keptVal) - y) < minDistancePx);
+          if (!tooClose) {
+            accepted.push(v);
+          }
+        });
+
+        // Sort descending for drawing order
+        const uniqueLevels = accepted.sort((x, y) => y - x);
+
+        uniqueLevels.forEach(v => {
+          const y = toY(v);
+          
+          gapCtx.beginPath();
+          if (v === 0) {
+            gapCtx.strokeStyle = '#999';
+            gapCtx.lineWidth   = 1.5;
+            gapCtx.setLineDash([4, 3]);
+          } else {
+            gapCtx.strokeStyle = '#e0e0e0';
+            gapCtx.lineWidth   = 1;
+            gapCtx.setLineDash([]);
+          }
+          gapCtx.moveTo(padL, y);
+          gapCtx.lineTo(W - padR, y);
+          gapCtx.stroke();
+          gapCtx.setLineDash([]);
+
+          // Label
+          gapCtx.fillStyle = '#666';
+          gapCtx.font = '10px "Roboto", sans-serif';
+          gapCtx.textAlign = 'right';
+          gapCtx.fillText(v.toLocaleString(), padL - 8, y + 4);
+        });
+
+        // Line
+        const gapColor = document.getElementById('opt-gap-graph-color').value;
+        gapCtx.beginPath();
+        gapCtx.strokeStyle = gapColor;
+        gapCtx.lineWidth   = 2;
+        gapCtx.lineJoin    = 'round';
+        slice.forEach((p, i) => {
+          const x = padL + (i / (slice.length - 1)) * gW;
+          const y = toY(p.v);
+          i === 0 ? gapCtx.moveTo(x, y) : gapCtx.lineTo(x, y);
+        });
+        gapCtx.stroke();
+
+        // X-axis time labels and grid lines based on absolute timestamps
+        if (slice.length >= 2) {
+          const minTime = slice[0].t;
+          const maxTime = slice[slice.length - 1].t;
+          const duration = maxTime - minTime;
+          const timeRange = duration || 1;
+          const axisY = padT + gH;
+
+          let interval = 1000;
+          const seconds = duration / 1000;
+          if (seconds <= 15) {
+            interval = 2 * 1000;
+          } else if (seconds <= 30) {
+            interval = 5 * 1000;
+          } else if (seconds <= 90) {
+            interval = 10 * 1000;
+          } else if (seconds <= 180) {
+            interval = 30 * 1000;
+          } else if (seconds <= 360) {
+            interval = 60 * 1000;
+          } else if (seconds <= 720) {
+            interval = 2 * 60 * 1000;
+          } else if (seconds <= 1800) {
+            interval = 5 * 60 * 1000;
+          } else if (seconds <= 3600) {
+            interval = 10 * 60 * 1000;
+          } else if (seconds <= 10800) {
+            interval = 30 * 60 * 1000;
+          } else {
+            interval = 60 * 60 * 1000;
+          }
+
+          const startGridTime = Math.ceil(minTime / interval) * interval;
+          gapCtx.font = '10px "Roboto", sans-serif';
+          gapCtx.textAlign = 'center';
+
+          for (let t = startGridTime; t <= maxTime; t += interval) {
+            const x = padL + ((t - minTime) / timeRange) * gW;
+
+            // Draw axis tick mark
+            const theme = document.getElementById('opt-graph-theme').value;
+            gapCtx.strokeStyle = (theme === 'light') ? '#555' : '#444';
+            gapCtx.beginPath();
+            gapCtx.moveTo(x, axisY);
+            gapCtx.lineTo(x, axisY + 4);
+            gapCtx.stroke();
+
+            // Format time label
+            const date = new Date(t);
+            const labelText = date.getHours().toString().padStart(2, '0') + ':' +
+                              date.getMinutes().toString().padStart(2, '0') + ':' +
+                              date.getSeconds().toString().padStart(2, '0');
+
+            gapCtx.fillStyle = '#888';
+            gapCtx.fillText(labelText, x, H - padB + 16);
+          }
+        }
+      }
+
+      function computeMilestone(count) {
+        if (!count || count <= 0) return null;
+        const magExp = Math.floor(Math.log10(count));
+        const step = Math.pow(10, magExp - 1);
+        const nextMilestone = Math.ceil((count + 0.0001) / step) * step;
+        const prevMilestone = nextMilestone - step;
+        return { nextMilestone, prevMilestone, step };
+      }
+
+      function fmtNum(n) {
+        if (n >= 1e9) return (n / 1e9).toFixed(2).replace(/\.?0+$/, '') + 'B';
+        if (n >= 1e6) return (n / 1e6).toFixed(2).replace(/\.?0+$/, '') + 'M';
+        if (n >= 1e3) return (n / 1e3).toFixed(1).replace(/\.?0+$/, '') + 'K';
+        return n.toLocaleString();
+      }
+
+      function updateProgressBar(wrId, fillId, startId, endId, count) {
+        const wrap = document.getElementById(wrId);
+        const showOpt = document.getElementById('opt-show-progress').value;
+        if (!count || count <= 0 || showOpt === 'hide') { wrap.style.display = 'none'; return; }
+        wrap.style.display = 'block';
+        const { nextMilestone, prevMilestone } = computeMilestone(count);
+        const progress = Math.max(0, Math.min(1, (count - prevMilestone) / (nextMilestone - prevMilestone)));
+        const pct = (progress * 100).toFixed(1);
+        document.getElementById(fillId).style.width = pct + '%';
+        if (startId && document.getElementById(startId)) {
+          document.getElementById(startId).textContent = fmtNum(prevMilestone);
+        }
+        if (endId && document.getElementById(endId)) {
+          document.getElementById(endId).textContent = fmtNum(nextMilestone);
+        }
+      }
+
+      function getGainPerMs(tracker) {
+        const hist = tracker.getHistory();
+        if (!hist || hist.length < 2) return null;
+        const recent = hist.slice(-Math.min(hist.length, 30));
+        const dt = recent[recent.length - 1].t - recent[0].t;
+        const dv = recent[recent.length - 1].v - recent[0].v;
+        if (dt <= 0) return null;
+        return dv / dt; // per millisecond
+      }
+
+      function updateOvertakeText(a, b, nameA, nameB) {
+        const el = document.getElementById('overtake-row');
+        if (!el) return;
+        if (a === null || b === null || a === b) { el.innerHTML = ''; return; }
+
+        // The trailing side needs to catch up
+        const gap = a - b; // positive = A leads B
+        const rateA = getGainPerMs(trackerA); // per ms
+        const rateB = getGainPerMs(trackerB);
+
+        if (rateA === null || rateB === null) { el.innerHTML = ''; return; }
+
+        // Relative closing rate: positive means the gap is shrinking
+        // If A > B: gap = a-b > 0. Gap shrinks if rateB > rateA.
+        const closingRate = (gap > 0) ? (rateB - rateA) : (rateA - rateB); // ms^-1
+        const absGap = Math.abs(gap);
+
+        const trailerName = gap > 0 ? nameB : nameA;
+        const leaderName  = gap > 0 ? nameA : nameB;
+
+        if (closingRate <= 0) {
+          // Gap is not closing — will never overtake
+          el.innerHTML = `<span class="overtake-label">Overtake:</span> <span class="overtake-never">Never (${trailerName} is falling further behind)</span>`;
+        } else {
+          const msUntil = absGap / closingRate;
+          const overtakeDate = new Date(Date.now() + msUntil);
+
+          // Format nicely
+          const days = Math.floor(msUntil / 86400000);
+          const hrs  = Math.floor((msUntil % 86400000) / 3600000);
+          const mins = Math.floor((msUntil % 3600000) / 60000);
+
+          let timeStr;
+          if (days > 365) {
+            timeStr = `${Math.round(days/365)} year(s)`;
+          } else if (days > 0) {
+            timeStr = `${days}d ${hrs}h ${mins}m`;
+          } else if (hrs > 0) {
+            timeStr = `${hrs}h ${mins}m`;
+          } else if (mins > 0) {
+            timeStr = `${mins}m`;
+          } else {
+            timeStr = 'very soon!';
+          }
+
+          const dateStr = overtakeDate.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+          el.innerHTML = `<span class="overtake-label">${trailerName} overtakes ${leaderName} in</span> <span class="overtake-val">${timeStr}</span> <span class="overtake-label">(${dateStr})</span>`;
+        }
+      }
+
+      function updateGap() {
+        const a     = trackerA.getCurrentCount();
+        const b     = trackerB.getCurrentCount();
+        const nameA = document.getElementById('name-a').textContent || 'A';
+        const nameB = document.getElementById('name-b').textContent || 'B';
+        if (a === null || b === null) return;
+
+        // Progress bars
+        updateProgressBar('progress-wrap-a', 'progress-fill-a', 'progress-start-a', 'progress-end-a', a);
+        updateProgressBar('progress-wrap-b', 'progress-fill-b', 'progress-start-b', 'progress-end-b', b);
+
+        // Overtake prediction
+        updateOvertakeText(a, b, nameA, nameB);
+
+        const gap    = a - b;
+        const absGap = Math.abs(gap);
+
+        const digitColor = document.getElementById('opt-digit-color').value;
+        const gapTextColor = document.getElementById('opt-gap-text-color').value;
+
+        if (gap > 0) {
+          gapHeroEl.textContent = nameA + ':';
+          gapHeroEl.style.color = gapTextColor;
+          gapSignEl.textContent = '+';
+          gapSignEl.style.color = digitColor;
+        } else if (gap < 0) {
+          gapHeroEl.textContent = nameB + ':';
+          gapHeroEl.style.color = gapTextColor;
+          gapSignEl.textContent = '+';
+          gapSignEl.style.color = digitColor;
+        } else {
+          gapHeroEl.textContent = 'Tied';
+          gapHeroEl.style.color = '#aaa';
+          gapSignEl.textContent = '+';
+          gapSignEl.style.color = '#aaa';
+        }
+
+        // Animate odometer (absolute gap value)
+        gapOdo.setOdometer(absGap, prevAbsGap);
+        prevAbsGap = absGap;
+
+        // Push signed gap so it crosses zero baseline
+        gapHistory.push({ t: Date.now(), v: gap });
+        if (gapHistory.length > 24000) gapHistory.shift();
+
+        drawGapGraph();
+      }
+
+      trackerA.setOnUpdate(updateGap);
+      trackerB.setOnUpdate(updateGap);
+
+      window._applyGapDigitColor = () => gapOdo.applyDigitColor();
+      window._applyGapFont       = (f) => gapOdo.applyFont(f);
+      window._applyGapTextColor  = (c) => { gapHeroEl.style.color = c; };
+      window._getPrevAbsGap      = () => prevAbsGap;
+      window._gapOdo             = gapOdo;
+      window._gapCanvas          = gapCanvas;
+      window._gapResizeCanvas    = () => { gapCanvas.width = gapCanvas.offsetWidth; drawGapGraph(); };
+      window._drawGapGraph       = drawGapGraph;
+      window._updateGap          = updateGap;
+    })();
+
+    /* ════════════════════════════════════════════════════════
+       GLOBAL OPTION HELPERS
+    ════════════════════════════════════════════════════════ */
+    function linkSliderNum(sliderId, numId, min, max, onApply) {
+      const slider = document.getElementById(sliderId);
+      const num    = document.getElementById(numId);
+      slider.addEventListener('input', function () {
+        num.value = this.value;
+        onApply(parseFloat(this.value));
+      });
+      num.addEventListener('input', function () {
+        const v = parseFloat(this.value);
+        if (!isNaN(v) && v >= min && v <= max) { slider.value = v; onApply(v); }
+      });
+      function commitNum() {
+        let v = parseFloat(num.value);
+        if (isNaN(v)) v = parseFloat(slider.value);
+        v = Math.max(min, Math.min(max, v));
+        num.value = v; slider.value = v; onApply(v);
+      }
+      num.addEventListener('blur', commitNum);
+      num.addEventListener('keydown', e => { if (e.key === 'Enter') { commitNum(); num.blur(); } });
+    }
+
+    function linkColorHex(pickerId, hexId, onApply) {
+      const picker = document.getElementById(pickerId);
+      const hex    = document.getElementById(hexId);
+      picker.addEventListener('input', function () {
+        hex.value = this.value;
+        onApply(this.value);
+      });
+      hex.addEventListener('input', function () {
+        let val = this.value.trim();
+        if (!val.startsWith('#') && /^[0-9A-Fa-f]{6}$/.test(val)) val = '#' + val;
+        if (/^#[0-9A-Fa-f]{6}$/.test(val)) { picker.value = val; onApply(val); }
+      });
+    }
+
+    function applyDigitColorAll() {
+      const c = document.getElementById('opt-digit-color').value;
+      allTrackers.forEach(t => t.odo.applyDigitColor());
+      if (window._applyGapDigitColor) window._applyGapDigitColor();
+      const gapSign = document.getElementById('gap-sign');
+      if (gapSign) gapSign.style.color = c;
+    }
+
+    function applyFontAll(font) {
+      document.body.style.fontFamily = font;
+      allTrackers.forEach(t => t.odo.applyFont(font));
+      document.querySelectorAll('.entity-name').forEach(el => el.style.fontFamily = font);
+    }
+
+    function applyGapFont(font) {
+      if (window._applyGapFont) window._applyGapFont(font);
+      const gapHero = document.getElementById('gap-hero-text');
+      if (gapHero) gapHero.style.fontFamily = font;
+      const gapSign = document.getElementById('gap-sign');
+      if (gapSign) gapSign.style.fontFamily = font;
+    }
+
+    /* ════════════════════════════════════════════════════════
+       WIRE OPTIONS CONTROLS
+    ════════════════════════════════════════════════════════ */
+
+    // Background
+    linkColorHex('opt-bg', 'hex-bg', val => { document.body.style.background = val; });
+
+    // Digit color
+    linkColorHex('opt-digit-color', 'hex-digit-color', () => applyDigitColorAll());
+    document.getElementById('opt-digit-color').addEventListener('input', applyDigitColorAll);
+
+    // Gap Text Color
+    function applyGapTextColor(val) {
+      const el = document.getElementById('gap-hero-text');
+      if (el) el.style.color = val;
+    }
+    linkColorHex('opt-gap-text-color', 'hex-gap-text-color', applyGapTextColor);
+    document.getElementById('opt-gap-text-color').addEventListener('input', function() {
+      applyGapTextColor(this.value);
+    });
+
+    // Font
+    const fontSelect = document.getElementById('opt-font');
+    ['change', 'input'].forEach(evt => {
+      fontSelect.addEventListener(evt, function () { applyFontAll(this.value); });
+    });
+
+    // Gap Font
+    const gapFontSelect = document.getElementById('opt-gap-font');
+    ['change', 'input'].forEach(evt => {
+      gapFontSelect.addEventListener(evt, function () { applyGapFont(this.value); });
+    });
+
+    // Odometer Size
+    linkSliderNum('opt-odo-size', 'num-odo-size', 40, 160, px => {
+      px = Math.round(px);
+      digitH = px;
+      document.documentElement.style.setProperty('--digit-h', px + 'px');
+      allTrackers.forEach(t => {
+        const saved = t.getCurrentCount();
+        const count = t.getColumns().length || 9;
+        t.odo.buildOdometer(count);
+        if (saved !== null) {
+          String(Math.floor(saved)).split('').map(Number).forEach((d, i) => {
+            const pos = CYCLE_LEN + d;
+            t.getPositions()[i] = pos;
+            t.getColumns()[i].strip.style.transition = 'none';
+            t.getColumns()[i].strip.style.top = `-${pos * digitH}px`;
+          });
+        }
+      });
+      if (window._gapOdo) {
+        const gOdo = window._gapOdo;
+        const count = gOdo.getColumns().length || 9;
+        gOdo.buildOdometer(count);
+        if (window._getPrevAbsGap) {
+          const saved = window._getPrevAbsGap();
+          if (saved !== null) {
+            String(Math.floor(saved)).split('').map(Number).forEach((d, i) => {
+              const pos = CYCLE_LEN + d;
+              gOdo.getPositions()[i] = pos;
+              gOdo.getColumns()[i].strip.style.transition = 'none';
+              gOdo.getColumns()[i].strip.style.top = `-${pos * digitH}px`;
+            });
+          }
+        }
+      }
+    });
+
+    // PFP Size
+    linkSliderNum('opt-pfp-size', 'num-pfp-size', 40, 200, px => {
+      document.querySelectorAll('.pfp-img').forEach(el => {
+        el.style.width = px + 'px'; el.style.height = px + 'px';
+      });
+    });
+
+    // Banner Height
+    document.querySelectorAll('.banner-img').forEach(el => el.style.height = '120px');
+    linkSliderNum('opt-banner-h', 'num-banner-h', 50, 300, px => {
+      document.querySelectorAll('.banner-img').forEach(el => el.style.height = px + 'px');
+    });
+
+    // Graph Height
+    linkSliderNum('opt-graph-h', 'num-graph-h', 80, 500, px => {
+      px = Math.round(px);
+      allTrackers.forEach(t => { t.canvas.height = px; t.resizeCanvas(); });
+      const gc = document.getElementById('canvas-gap');
+      if (gc) { gc.height = px; if (window._gapResizeCanvas) window._gapResizeCanvas(); }
+    });
+
+    // Graph Width
+    linkSliderNum('opt-graph-w', 'num-graph-w', 200, 1400, px => {
+      document.querySelectorAll('.graph-wrap').forEach(el => el.style.maxWidth = Math.round(px) + 'px');
+      allTrackers.forEach(t => t.resizeCanvas());
+      if (window._gapResizeCanvas) window._gapResizeCanvas();
+    });
+    document.querySelectorAll('.graph-wrap').forEach(el => el.style.maxWidth = '700px');
+    // Init gap canvas and styles after layout
+    requestAnimationFrame(() => {
+      applyFontAll(document.getElementById('opt-font').value);
+      applyDigitColorAll();
+      const gapTextColorEl = document.getElementById('opt-gap-text-color');
+      if (gapTextColorEl && window._applyGapTextColor) {
+        window._applyGapTextColor(gapTextColorEl.value);
+      }
+      applyGapFont(document.getElementById('opt-gap-font').value);
+      if (window._gapResizeCanvas) window._gapResizeCanvas();
+    });
+
+    // Animation Speed
+    (function () {
+      const slider = document.getElementById('opt-anim');
+      const num    = document.getElementById('num-anim');
+      function sliderToSec(v) { return +((v / 30 * 1.95 + 0.05).toFixed(2)); }
+      function secToSlider(s) { return Math.round((s - 0.05) / 1.95 * 30); }
+      function applyAnim(s) { document.documentElement.style.setProperty('--odo-anim', s + 's'); }
+      slider.addEventListener('input', function () { const s = sliderToSec(parseInt(this.value)); num.value = s; applyAnim(s); });
+      num.addEventListener('input', function () { const s = parseFloat(this.value); if (!isNaN(s) && s >= 0.05 && s <= 2) { slider.value = secToSlider(s); applyAnim(s); } });
+      function commit() { let s = parseFloat(num.value); if (isNaN(s)) s = 0.45; s = Math.max(0.05, Math.min(2, s)); num.value = s.toFixed(2); slider.value = secToSlider(s); applyAnim(s); }
+      num.addEventListener('blur', commit);
+      num.addEventListener('keydown', e => { if (e.key === 'Enter') { commit(); num.blur(); } });
+    })();
+
+    // Refresh Interval
+    linkSliderNum('opt-interval', 'num-interval', 1, 30, secs => {
+      fetchInterval = Math.round(secs) * 1000;
+      allTrackers.forEach(t => t.reschedule());
+    });
+
+    // Graph Data Points
+    linkSliderNum('opt-points', 'num-points', 5, 24000, v => {
+      maxPoints = Math.round(v);
+      allTrackers.forEach(t => t.drawGraph());
+    });
+
+    // Graph colors / theme / fill / dots
+    linkColorHex('opt-graph-bg',    'hex-graph-bg',    () => allTrackers.forEach(t => t.drawGraph()));
+    linkColorHex('opt-graph-color', 'hex-graph-color', () => allTrackers.forEach(t => t.drawGraph()));
+    linkColorHex('opt-gap-graph-bg', 'hex-gap-graph-bg', () => { if (window._drawGapGraph) window._drawGapGraph(); });
+    linkColorHex('opt-gap-graph-color', 'hex-gap-graph-color', () => { if (window._drawGapGraph) window._drawGapGraph(); });
+
+    const themeSelect = document.getElementById('opt-graph-theme');
+    function handleThemeChange() {
+      if (themeSelect.value === 'light') {
+        document.getElementById('opt-graph-bg').value    = '#ebebeb';
+        document.getElementById('hex-graph-bg').value    = '#ebebeb';
+        document.getElementById('opt-graph-color').value = '#b3382c';
+        document.getElementById('hex-graph-color').value = '#b3382c';
+        document.getElementById('opt-graph-fill').value  = 'line';
+        document.getElementById('opt-graph-dots').value  = 'hide';
+
+        document.getElementById('opt-gap-graph-bg').value = '#ffffff';
+        document.getElementById('hex-gap-graph-bg').value = '#ffffff';
+        document.getElementById('opt-gap-graph-color').value = '#2196F3';
+        document.getElementById('hex-gap-graph-color').value = '#2196F3';
+      } else {
+        document.getElementById('opt-graph-bg').value    = '#121212';
+        document.getElementById('hex-graph-bg').value    = '#121212';
+        document.getElementById('opt-graph-color').value = '#2fb5e3';
+        document.getElementById('hex-graph-color').value = '#2fb5e3';
+        document.getElementById('opt-graph-fill').value  = 'line';
+        document.getElementById('opt-graph-dots').value  = 'hide';
+
+        document.getElementById('opt-gap-graph-bg').value = '#121212';
+        document.getElementById('hex-gap-graph-bg').value = '#121212';
+        document.getElementById('opt-gap-graph-color').value = '#2196F3';
+        document.getElementById('hex-gap-graph-color').value = '#2196F3';
+      }
+      allTrackers.forEach(t => t.drawGraph());
+      if (window._drawGapGraph) window._drawGapGraph();
+    }
+    ['change', 'input'].forEach(evt => themeSelect.addEventListener(evt, handleThemeChange));
+    ['opt-graph-fill', 'opt-graph-dots'].forEach(id => {
+      ['change', 'input'].forEach(evt => document.getElementById(id).addEventListener(evt, () => allTrackers.forEach(t => t.drawGraph())));
+    });
+
+    // Gains Display Options
+    function bindGainToggle(selectId, itemIds) {
+      const sel = document.getElementById(selectId);
+      if (!sel) return;
+      ['change', 'input'].forEach(evt => {
+        sel.addEventListener(evt, function () {
+          itemIds.forEach(itemId => {
+            const item = document.getElementById(itemId);
+            if (item) item.style.display = (this.value === 'show') ? 'block' : 'none';
+          });
+        });
+      });
+    }
+    bindGainToggle('opt-show-sec', ['item-a-sec', 'item-b-sec']);
+    bindGainToggle('opt-show-min', ['item-a-min', 'item-b-min']);
+    bindGainToggle('opt-show-hr',  ['item-a-hr',  'item-b-hr']);
+    bindGainToggle('opt-show-day', ['item-a-day', 'item-b-day']);
+
+    linkColorHex('opt-gain-color', 'hex-gain-color', val => {
+      document.querySelectorAll('.gain-val').forEach(el => el.style.color = val);
+    });
+    linkSliderNum('opt-gain-size', 'num-gain-size', 10, 36, px => {
+      document.querySelectorAll('.gain-val').forEach(el => el.style.fontSize = Math.round(px) + 'px');
+    });
+
+    // Progress Bar Options
+    const showProgressSelect = document.getElementById('opt-show-progress');
+    ['change', 'input'].forEach(evt => {
+      showProgressSelect.addEventListener(evt, () => {
+        if (window._updateGap) window._updateGap();
+      });
+    });
+
+    linkColorHex('opt-progress-color', 'hex-progress-color', val => {
+      document.querySelectorAll('.progress-fill').forEach(el => el.style.background = val);
+    });
+    linkSliderNum('opt-progress-h', 'num-progress-h', 2, 30, px => {
+      const h = Math.round(px);
+      document.querySelectorAll('.progress-track').forEach(el => {
+        el.style.height = h + 'px';
+        el.style.borderRadius = Math.round(h / 2) + 'px';
+      });
+      document.querySelectorAll('.progress-fill').forEach(el => {
+        el.style.borderRadius = Math.round(h / 2) + 'px';
+      });
+    });
+
+    // Overtake Text Options
+    linkSliderNum('opt-overtake-size', 'num-overtake-size', 10, 36, px => {
+      const el = document.getElementById('overtake-row');
+      if (el) el.style.fontSize = Math.round(px) + 'px';
+    });
+
+    /* ════════════════════════════════════════════════════════
+       HIDE UI TOGGLE (H key)
+    ════════════════════════════════════════════════════════ */
+    let uiHidden = false;
+    const topControls = document.getElementById('top-controls');
+    const optionsEl   = document.getElementById('options');
+    const searchA     = document.getElementById('search-a');
+    const searchB     = document.getElementById('search-b');
+
+    function toggleUI(hide) {
+      uiHidden = (hide !== undefined) ? hide : !uiHidden;
+      [topControls, optionsEl, searchA, searchB].forEach(el => {
+        el.style.display = uiHidden ? 'none' : '';
+      });
+    }
+
+    document.getElementById('hide-ui-btn').addEventListener('click', () => toggleUI(true));
+
+    document.addEventListener('keydown', function (e) {
+      const active = document.activeElement;
+      const isInput = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.tagName === 'SELECT');
+      if (!isInput && (e.key === 'h' || e.key === 'H')) toggleUI();
+    });
+
+    /* Custom Select Component for OBS browser source compatibility */
+    function initCustomSelect(selectId) {
+      const select = document.getElementById(selectId);
+      if (!select) return;
+
+      select.classList.add('native-select');
+
+      const container = document.createElement('div');
+      container.className = 'custom-select';
+      select.parentNode.insertBefore(container, select);
+      container.appendChild(select);
+
+      const trigger = document.createElement('div');
+      trigger.className = 'custom-select-trigger';
+      container.appendChild(trigger);
+
+      const optionsWrap = document.createElement('div');
+      optionsWrap.className = 'custom-select-options';
+      container.appendChild(optionsWrap);
+
+      function updateOptions() {
+        optionsWrap.innerHTML = '';
+        Array.from(select.options).forEach(opt => {
+          const div = document.createElement('div');
+          div.className = 'custom-option';
+          if (opt.selected) {
+            div.classList.add('selected');
+            trigger.textContent = opt.textContent;
+          }
+          div.textContent = opt.textContent;
+          div.dataset.value = opt.value;
+          div.addEventListener('click', (e) => {
+            e.stopPropagation();
+            select.value = opt.value;
+            select.dispatchEvent(new Event('change'));
+            container.classList.remove('open');
+          });
+          optionsWrap.appendChild(div);
+        });
+      }
+
+      updateOptions();
+
+      select.addEventListener('change', () => {
+        updateOptions();
+      });
+
+      trigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        document.querySelectorAll('.custom-select').forEach(cs => {
+          if (cs !== container) cs.classList.remove('open');
+        });
+        container.classList.toggle('open');
+      });
+    }
+
+    document.addEventListener('click', () => {
+      document.querySelectorAll('.custom-select').forEach(cs => cs.classList.remove('open'));
+    });
+
+    initCustomSelect('type-a');
+    initCustomSelect('type-b');
+
+    /* ════════════════════════════════════════════════════════
+       RESIZE
+    ════════════════════════════════════════════════════════ */
+    window.addEventListener('resize', () => {
+      allTrackers.forEach(t => t.resizeCanvas());
+      if (window._gapResizeCanvas) window._gapResizeCanvas();
+    });
+  </script>
+</body>
+</html>

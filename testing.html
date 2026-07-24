@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Get Wave Values per Second</title>
+</head>
+<body style="font-family: sans-serif; padding: 20px;">
+  <h3>Upload Audio to get 1 Value Per Second</h3>
+  <input type="file" id="audioInput" accept="audio/*"><br><br>
+  <textarea id="output" rows="10" cols="70" placeholder="Your array of values will appear here..."></textarea>
+
+  <script>
+    document.getElementById('audioInput').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      
+      reader.onload = function(e) {
+        document.getElementById('output').value = "Processing audio... please wait.";
+        
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        audioContext.decodeAudioData(e.target.result, function(buffer) {
+          const channelData = buffer.getChannelData(0); 
+          
+          // Get the exact number of samples in one second (usually 44100 or 48000)
+          const sampleRate = buffer.sampleRate; 
+          // Get the total length of the song in seconds, rounded up
+          const totalSeconds = Math.ceil(buffer.duration); 
+          
+          let peaks = [];
+          
+          // Find the loudest peak for every single second
+          for (let i = 0; i < totalSeconds; i++) {
+            let max = 0;
+            // Figure out exactly where this second starts and ends in the data
+            let startSample = i * sampleRate;
+            let endSample = Math.min((i + 1) * sampleRate, channelData.length);
+            
+            for (let j = startSample; j < endSample; j++) {
+              let val = Math.abs(channelData[j]);
+              if (val > max) max = val;
+            }
+            
+            // Round to 3 decimal places
+            // Set your multiplier here (e.g., 100, 255, 50, etc.)
+            let multiplier = 100000000; 
+            
+            // Multiply the value
+            let finalValue = max * multiplier;
+            
+            // Round it to a clean whole number (so you get 54 instead of 54.321)
+            peaks.push(Math.round(finalValue));
+          }
+          
+          // Print the final array
+          document.getElementById('output').value = JSON.stringify(peaks);
+        });
+      };
+      reader.readAsArrayBuffer(file);
+    });
+  </script>
+</body>
+</html>
