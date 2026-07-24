@@ -970,10 +970,10 @@
         if (newStr.length === 0) return;
 
         const initCenter = 2 * CYCLE_LEN;
+        const newDigits  = newStr.split('').map(Number);
 
-        // If no oldValue (initial setup), set directly without animation
-        if (oldValue === null || oldValue === undefined || isNaN(oldValue)) {
-          const newDigits = newStr.split('').map(Number);
+        // If no oldValue (initial setup) or if digit count changed, build odometer to newDigits.length directly
+        if (oldValue === null || oldValue === undefined || isNaN(oldValue) || columns.length !== newDigits.length) {
           buildOdometer(newDigits.length);
           newDigits.forEach((d, i) => {
             const initPos = initCenter + d;
@@ -985,29 +985,9 @@
           return;
         }
 
-        const oldStr = String(Math.floor(oldValue));
-        const maxLen = Math.max(newStr.length, oldStr.length);
-
-        // Pad strings with leading zeros so both have length maxLen
-        const paddedOld = oldStr.padStart(maxLen, '0');
-        const paddedNew = newStr.padStart(maxLen, '0');
-
-        const oldDigits = paddedOld.split('').map(Number);
-        const newDigits = paddedNew.split('').map(Number);
-
-        // If the number of DOM columns doesn't match maxLen, rebuild to maxLen first
-        if (columns.length !== maxLen) {
-          buildOdometer(maxLen);
-          oldDigits.forEach((d, i) => {
-            const initPos = initCenter + d;
-            colPositions[i] = initPos;
-            columns[i].strip.style.transition = 'none';
-            columns[i].strip.style.top = `-${initPos * digitH}px`;
-          });
-          odoEl.offsetHeight; // force reflow
-        }
-
-        const goingUp = newValue >= oldValue;
+        const oldStr    = String(Math.floor(oldValue));
+        const oldDigits = oldStr.split('').map(Number);
+        const goingUp   = newValue >= oldValue;
         const isMixernoMode = (document.getElementById('opt-anim-style')?.value === 'mixerno');
 
         // Always normalize colPositions to center cycle (initCenter + digit) before new animation
@@ -1029,7 +1009,7 @@
           let delta;
 
           if (isMixernoMode) {
-            const fromRight = maxLen - 1 - i;
+            const fromRight = newDigits.length - 1 - i;
             const placeStep = Math.pow(10, fromRight);
             if (goingUp) {
               const rawSteps = Math.floor(newValue / placeStep) - Math.floor(oldValue / placeStep);
