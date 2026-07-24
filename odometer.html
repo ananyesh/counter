@@ -69,7 +69,10 @@
       display: inline-block;
       user-select: none;
       font-size: 0.9rem;
-      z-index: 100;
+      z-index: 10;
+    }
+    .custom-select.open {
+      z-index: 9999;
     }
     .custom-select-trigger {
       padding: 8px 30px 8px 12px;
@@ -97,14 +100,23 @@
       top: 100%;
       left: 0;
       right: 0;
+      max-height: 220px;
+      overflow-y: auto;
       margin-top: 4px;
-      border: 1px solid #333;
-      background: #1a1a1a;
+      border: 1px solid #444;
+      background: #1e1e1e;
       border-radius: 4px;
-      overflow: hidden;
       display: none;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.7);
       text-align: left;
+      z-index: 9999;
+    }
+    .custom-select-options::-webkit-scrollbar {
+      width: 6px;
+    }
+    .custom-select-options::-webkit-scrollbar-thumb {
+      background: #444;
+      border-radius: 3px;
     }
     .custom-select.open .custom-select-options {
       display: block;
