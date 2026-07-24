@@ -196,6 +196,11 @@
       text-align: center;
       margin-bottom: 24px;
       position: relative;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: visible;
     }
 
     /* EST badge — absolutely positioned so it never causes layout shift */
@@ -224,6 +229,7 @@
       font-family: inherit;
       font-variant-numeric: tabular-nums;
       font-feature-settings: "tnum" 1;
+      flex-shrink: 0;
     }
 
     .odo-digit {
@@ -232,6 +238,7 @@
       height: var(--digit-h);
       overflow: hidden;
       position: relative;
+      flex-shrink: 0;
     }
 
     .odo-strip {
@@ -267,6 +274,7 @@
       color: #fff;
       padding-bottom: calc(var(--digit-h) * 0.05);
       margin: 0 2px;
+      flex-shrink: 0;
     }
 
     /* ── Gain Stats ── */
@@ -329,6 +337,8 @@
       align-items: center;
       justify-content: center;
       margin-bottom: 12px;
+      width: 100%;
+      overflow: visible;
     }
     #gap-sign {
       font-size: calc(var(--digit-h) * 0.92);
@@ -337,6 +347,7 @@
       line-height: var(--digit-h);
       margin-right: 2px;
       font-family: inherit;
+      flex-shrink: 0;
     }
 
     /* ── Options ── */
