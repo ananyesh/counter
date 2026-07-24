@@ -1591,7 +1591,7 @@
           nameText: nameEl.textContent,
           pfpUrl: lastPfpUrl,
           bannerUrl: lastBannerUrl,
-          estMode
+          isEstMode: estBadge ? (estBadge.style.display === 'block') : false
         };
       }
 
@@ -1613,7 +1613,7 @@
         lastRealTime  = st.lastRealTime !== undefined ? st.lastRealTime : null;
         growthRate    = st.growthRate || 0;
         currentCount  = st.currentCount !== undefined ? st.currentCount : null;
-        setEstMode(!!st.estMode);
+        setEstMode(!!st.isEstMode || !!st.estMode);
 
         if (st.nameText) nameEl.textContent = st.nameText;
 
