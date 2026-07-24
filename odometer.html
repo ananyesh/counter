@@ -840,6 +840,17 @@
         <input type="number" id="num-progress-h" class="opt-num" min="2" max="30" value="8" />
         <span class="opt-unit">px</span>
       </div>
+      <div class="opt-row">
+        <label>Progress Text Size</label>
+        <input type="range" id="opt-progress-text-size" min="8" max="32" value="13" />
+        <input type="number" id="num-progress-text-size" class="opt-num" min="8" max="32" value="13" />
+        <span class="opt-unit">px</span>
+      </div>
+      <div class="opt-row">
+        <label>Progress Text Color</label>
+        <input type="color" id="opt-progress-text-color" value="#888888" />
+        <input type="text" id="hex-progress-text-color" class="opt-hex" value="#888888" maxlength="7" />
+      </div>
     </div>
 
     <!-- Overtake Text -->
@@ -2087,7 +2098,7 @@
             timeStr = 'very soon!';
           }
 
-          const dateStr = overtakeDate.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+          const dateStr = overtakeDate.toLocaleString([], { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
           el.innerHTML = `<span class="overtake-label">${trailerName} overtakes ${leaderName} in</span> <span class="overtake-val">${timeStr}</span> <span class="overtake-label">(${dateStr})</span>`;
         }
       }
@@ -2468,6 +2479,15 @@
       });
     });
 
+    function applyProgressTextColor(val) {
+      document.querySelectorAll('.progress-num').forEach(el => el.style.color = val);
+    }
+    linkColorHex('opt-progress-text-color', 'hex-progress-text-color', applyProgressTextColor);
+
+    linkSliderNum('opt-progress-text-size', 'num-progress-text-size', 8, 32, px => {
+      document.querySelectorAll('.progress-num').forEach(el => el.style.fontSize = Math.round(px) + 'px');
+    });
+
     // Overtake Text Options
     linkSliderNum('opt-overtake-size', 'num-overtake-size', 10, 36, px => {
       const el = document.getElementById('overtake-row');
@@ -2666,6 +2686,12 @@
           if (animStyle) applyAnimStyle(animStyle);
           const gapTextColor = document.getElementById('opt-gap-text-color')?.value;
           if (gapTextColor && window._applyGapTextColor) window._applyGapTextColor(gapTextColor);
+          const progTextColor = document.getElementById('opt-progress-text-color')?.value;
+          if (progTextColor) applyProgressTextColor(progTextColor);
+          const progTextSize = document.getElementById('num-progress-text-size')?.value;
+          if (progTextSize) {
+            document.querySelectorAll('.progress-num').forEach(el => el.style.fontSize = Math.round(progTextSize) + 'px');
+          }
         });
       } catch (e) {
         console.warn('Failed to load state from localStorage:', e);
