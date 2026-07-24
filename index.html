@@ -19,6 +19,7 @@
       font-family: 'Roboto', 'Arial', sans-serif;
       min-height: 100vh;
       padding: 20px;
+      overflow-x: hidden;
     }
 
     /* ── Top Controls ── */
@@ -271,15 +272,18 @@
     /* ── Gain Stats ── */
     .gain-stats-wrap {
       display: flex;
-      gap: 16px;
+      gap: 8px;
       justify-content: center;
       align-items: center;
       margin: 0 auto 20px auto;
+      max-width: 700px;
+      flex-wrap: wrap;
     }
     .gain-item {
-      width: 170px;
+      flex: 1 1 100px;
+      max-width: 170px;
+      min-width: 70px;
       text-align: center;
-      flex-shrink: 0;
     }
     .gain-val {
       font-size: 1rem;
@@ -287,6 +291,7 @@
       color: #11ff00;
       font-family: inherit;
       display: inline-block;
+      white-space: nowrap;
     }
 
     /* ── Graph ── */
