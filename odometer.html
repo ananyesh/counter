@@ -878,7 +878,7 @@
     /* ════════════════════════════════════════════════════════
        SHARED CONSTANTS & STATE
     ════════════════════════════════════════════════════════ */
-    const CYCLES    = 3;
+    const CYCLES    = 5;
     const CYCLE_LEN = 10;
 
     let digitH        = 80;
@@ -922,13 +922,14 @@
           odoEl.appendChild(col);
           columns.push({ col, strip });
 
-          colPositions.push(CYCLE_LEN);
-          strip.style.top = `-${CYCLE_LEN * digitH}px`;
+          const initCenter = 2 * CYCLE_LEN;
+          colPositions.push(initCenter);
+          strip.style.top = `-${initCenter * digitH}px`;
 
           strip.addEventListener('transitionend', () => {
             const curPos   = colPositions[colIndex];
             const digit    = ((curPos % CYCLE_LEN) + CYCLE_LEN) % CYCLE_LEN;
-            const centered = CYCLE_LEN + digit;
+            const centered = 2 * CYCLE_LEN + digit;
             if (centered === curPos) return;
             strip.style.transition = 'none';
             strip.style.top = `-${centered * digitH}px`;
@@ -952,12 +953,14 @@
         const newStr = String(Math.floor(newValue));
         if (newStr.length === 0) return;
 
+        const initCenter = 2 * CYCLE_LEN;
+
         // If no oldValue (initial setup), set directly without animation
         if (oldValue === null || oldValue === undefined || isNaN(oldValue)) {
           const newDigits = newStr.split('').map(Number);
           buildOdometer(newDigits.length);
           newDigits.forEach((d, i) => {
-            const initPos = CYCLE_LEN + d;
+            const initPos = initCenter + d;
             colPositions[i] = initPos;
             columns[i].strip.style.transition = 'none';
             columns[i].strip.style.top = `-${initPos * digitH}px`;
@@ -980,7 +983,7 @@
         if (columns.length !== maxLen) {
           buildOdometer(maxLen);
           oldDigits.forEach((d, i) => {
-            const initPos = CYCLE_LEN + d;
+            const initPos = initCenter + d;
             colPositions[i] = initPos;
             columns[i].strip.style.transition = 'none';
             columns[i].strip.style.top = `-${initPos * digitH}px`;
@@ -989,6 +992,7 @@
         }
 
         const goingUp = newValue >= oldValue;
+        const isMixernoMode = (document.getElementById('opt-anim-style')?.value === 'mixerno');
 
         // Animate each column from oldDigits to newDigits
         newDigits.forEach((d, i) => {
@@ -996,11 +1000,39 @@
           const oldAbsPos = colPositions[i];
           const oldDigit  = oldAbsPos % CYCLE_LEN;
           let delta;
-          if (goingUp) {
-            delta = (d >= oldDigit) ? (d - oldDigit) : (CYCLE_LEN - oldDigit + d);
+
+          if (isMixernoMode) {
+            const fromRight = maxLen - 1 - i;
+            const placeStep = Math.pow(10, fromRight);
+            if (goingUp) {
+              const rawSteps = Math.floor(newValue / placeStep) - Math.floor(oldValue / placeStep);
+              if (rawSteps === 0) {
+                delta = 0;
+              } else if (rawSteps < 10) {
+                delta = rawSteps;
+              } else {
+                const rem = rawSteps % 10;
+                delta = (rem === 0) ? 10 : (10 + rem);
+              }
+            } else {
+              const rawSteps = Math.floor(oldValue / placeStep) - Math.floor(newValue / placeStep);
+              if (rawSteps === 0) {
+                delta = 0;
+              } else if (rawSteps < 10) {
+                delta = -rawSteps;
+              } else {
+                const rem = rawSteps % 10;
+                delta = -(rem === 0 ? 10 : (10 + rem));
+              }
+            }
           } else {
-            delta = (d <= oldDigit) ? -(oldDigit - d) : -(oldDigit + CYCLE_LEN - d);
+            if (goingUp) {
+              delta = (d >= oldDigit) ? (d - oldDigit) : (CYCLE_LEN - oldDigit + d);
+            } else {
+              delta = (d <= oldDigit) ? -(oldDigit - d) : -(oldDigit + CYCLE_LEN - d);
+            }
           }
+
           if (delta === 0) return;
           const newAbsPos = oldAbsPos + delta;
           colPositions[i] = newAbsPos;
@@ -2189,7 +2221,7 @@
         t.odo.buildOdometer(count);
         if (saved !== null) {
           String(Math.floor(saved)).split('').map(Number).forEach((d, i) => {
-            const pos = CYCLE_LEN + d;
+            const pos = 2 * CYCLE_LEN + d;
             t.getPositions()[i] = pos;
             t.getColumns()[i].strip.style.transition = 'none';
             t.getColumns()[i].strip.style.top = `-${pos * digitH}px`;
@@ -2204,7 +2236,7 @@
           const saved = window._getPrevAbsGap();
           if (saved !== null) {
             String(Math.floor(saved)).split('').map(Number).forEach((d, i) => {
-              const pos = CYCLE_LEN + d;
+              const pos = 2 * CYCLE_LEN + d;
               gOdo.getPositions()[i] = pos;
               gOdo.getColumns()[i].strip.style.transition = 'none';
               gOdo.getColumns()[i].strip.style.top = `-${pos * digitH}px`;
