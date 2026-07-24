@@ -1010,6 +1010,17 @@
         const goingUp = newValue >= oldValue;
         const isMixernoMode = (document.getElementById('opt-anim-style')?.value === 'mixerno');
 
+        // Always normalize colPositions to center cycle (initCenter + digit) before new animation
+        columns.forEach((colObj, i) => {
+          const curPos   = colPositions[i];
+          const digit    = ((curPos % CYCLE_LEN) + CYCLE_LEN) % CYCLE_LEN;
+          const centered = initCenter + digit;
+          colPositions[i] = centered;
+          colObj.strip.style.transition = 'none';
+          colObj.strip.style.top = `-${centered * digitH}px`;
+        });
+        odoEl.offsetHeight; // force reflow
+
         // Animate each column from oldDigits to newDigits
         newDigits.forEach((d, i) => {
           const { strip } = columns[i];
