@@ -830,6 +830,22 @@
         </select>
       </div>
       <div class="opt-row">
+        <label>Milestone Step Interval</label>
+        <select id="opt-progress-step">
+          <option value="auto" selected>Auto (10% Magnitude)</option>
+          <option value="100m">100 Million (100M)</option>
+          <option value="50m">50 Million (50M)</option>
+          <option value="10m">10 Million (10M)</option>
+          <option value="5m">5 Million (5M)</option>
+          <option value="1m">1 Million (1M)</option>
+          <option value="500k">500 Thousand (500K)</option>
+          <option value="100k">100 Thousand (100K)</option>
+          <option value="50k">50 Thousand (50K)</option>
+          <option value="10k">10 Thousand (10K)</option>
+          <option value="1k">1 Thousand (1K)</option>
+        </select>
+      </div>
+      <div class="opt-row">
         <label>Progress Bar Color</label>
         <input type="color" id="opt-progress-color" value="#ffffff" />
         <input type="text" id="hex-progress-color" class="opt-hex" value="#ffffff" maxlength="7" />
@@ -2012,8 +2028,22 @@
 
       function computeMilestone(count) {
         if (!count || count <= 0) return null;
-        const magExp = Math.floor(Math.log10(count));
-        const step = Math.pow(10, magExp - 1);
+        const stepOpt = document.getElementById('opt-progress-step')?.value || 'auto';
+        let step;
+        if (stepOpt === '100m') step = 100000000;
+        else if (stepOpt === '50m') step = 50000000;
+        else if (stepOpt === '10m') step = 10000000;
+        else if (stepOpt === '5m') step = 5000000;
+        else if (stepOpt === '1m') step = 1000000;
+        else if (stepOpt === '500k') step = 500000;
+        else if (stepOpt === '100k') step = 100000;
+        else if (stepOpt === '50k') step = 50000;
+        else if (stepOpt === '10k') step = 10000;
+        else if (stepOpt === '1k') step = 1000;
+        else {
+          const magExp = Math.floor(Math.log10(count));
+          step = Math.pow(10, magExp - 1);
+        }
         const nextMilestone = Math.ceil((count + 0.0001) / step) * step;
         const prevMilestone = nextMilestone - step;
         return { nextMilestone, prevMilestone, step };
@@ -2459,10 +2489,10 @@
 
     // Progress Bar Options
     const showProgressSelect = document.getElementById('opt-show-progress');
+    const stepProgressSelect = document.getElementById('opt-progress-step');
     ['change', 'input'].forEach(evt => {
-      showProgressSelect.addEventListener(evt, () => {
-        if (window._updateGap) window._updateGap();
-      });
+      if (showProgressSelect) showProgressSelect.addEventListener(evt, () => { if (window._updateGap) window._updateGap(); });
+      if (stepProgressSelect) stepProgressSelect.addEventListener(evt, () => { if (window._updateGap) window._updateGap(); });
     });
 
     linkColorHex('opt-progress-color', 'hex-progress-color', val => {
@@ -2589,6 +2619,7 @@
     initCustomSelect('opt-gap-font');
     initCustomSelect('opt-graph-theme');
     initCustomSelect('opt-show-progress');
+    initCustomSelect('opt-progress-step');
 
     /* ════════════════════════════════════════════════════════
        RESIZE
