@@ -774,6 +774,10 @@
         <input type="range" id="opt-points" min="5" max="24000" value="30" />
         <input type="number" id="num-points" class="opt-num" min="5" max="24000" value="30" />
       </div>
+      <div class="opt-row" style="margin-top:8px;">
+        <label>Reset Graph</label>
+        <button id="btn-clear-graph" style="background:#dc3545;color:#ffffff;border:none;padding:5px 14px;border-radius:4px;cursor:pointer;font-weight:600;font-size:12px;transition:background 0.2s;">🗑️ Clear Graph Data</button>
+      </div>
     </div>
 
     <!-- Progress Bar -->
@@ -1547,7 +1551,77 @@
         }
       }
       typeSelect.addEventListener('change', updatePlaceholder);
-      updatePlaceholder();
+      function getState() {
+        return {
+          trackedId,
+          trackedType: typeSelect.value,
+          inputValue: inputEl.value,
+          history,
+          realHistory,
+          lastRealCount,
+          lastRealTime,
+          growthRate,
+          currentCount,
+          nameText: nameEl.textContent,
+          pfpUrl: lastPfpUrl,
+          bannerUrl: lastBannerUrl,
+          estMode
+        };
+      }
+
+      function setState(st) {
+        if (!st) return;
+        stopTracking();
+        if (st.trackedType) {
+          typeSelect.value = st.trackedType;
+          updatePlaceholder();
+        }
+        if (st.inputValue !== undefined) inputEl.value = st.inputValue;
+        if (st.trackedId) inputEl.value = st.trackedId;
+
+        trackedId     = st.trackedId || null;
+        trackedType   = st.trackedType || typeSelect.value;
+        history       = Array.isArray(st.history) ? st.history : [];
+        realHistory   = Array.isArray(st.realHistory) ? st.realHistory : [];
+        lastRealCount = st.lastRealCount !== undefined ? st.lastRealCount : null;
+        lastRealTime  = st.lastRealTime !== undefined ? st.lastRealTime : null;
+        growthRate    = st.growthRate || 0;
+        currentCount  = st.currentCount !== undefined ? st.currentCount : null;
+        setEstMode(!!st.estMode);
+
+        if (st.nameText) nameEl.textContent = st.nameText;
+
+        if (st.pfpUrl) {
+          lastPfpUrl = st.pfpUrl;
+          pfpImg.src = st.pfpUrl;
+          pfpWrap.style.display = 'block';
+        }
+        if (st.bannerUrl) {
+          lastBannerUrl = st.bannerUrl;
+          bannerImg.src = st.bannerUrl;
+          bannerWrap.style.display = 'block';
+        }
+
+        if (currentCount !== null) {
+          odo.setOdometer(currentCount);
+        }
+
+        if (trackedId) {
+          trackBtn.style.display = 'none';
+          stopBtn.style.display  = 'inline-block';
+          const gen = ++fetchGen;
+          runFetch(gen);
+        }
+        drawGraph();
+        updateGainStats();
+      }
+
+      function clearHistory() {
+        history = [];
+        realHistory = [];
+        drawGraph();
+        updateGainStats();
+      }
 
       // ── Init odometer ──
       odo.buildOdometer(9);
@@ -1559,6 +1633,9 @@
         resizeCanvas,
         odo,
         canvas,
+        getState,
+        setState,
+        clearHistory,
         getHistory: () => history,
         getPfpImg: () => pfpImg,
         getBannerImg: () => bannerImg,
@@ -1968,6 +2045,9 @@
       window._gapResizeCanvas    = () => { gapCanvas.width = gapCanvas.offsetWidth; drawGapGraph(); };
       window._drawGapGraph       = drawGapGraph;
       window._updateGap          = updateGap;
+      window._getGapHistory      = () => gapHistory;
+      window._setGapHistory      = (arr) => { gapHistory = Array.isArray(arr) ? arr : []; drawGapGraph(); };
+      window._clearGapHistory    = () => { gapHistory = []; drawGapGraph(); };
     })();
 
     /* ════════════════════════════════════════════════════════
@@ -2357,6 +2437,108 @@
       allTrackers.forEach(t => t.resizeCanvas());
       if (window._gapResizeCanvas) window._gapResizeCanvas();
     });
+
+    /* ════════════════════════════════════════════════════════
+       PERSISTENCE & CACHE (localStorage) & RESET GRAPH
+    ════════════════════════════════════════════════════════ */
+    function showToast(msg) {
+      let toast = document.getElementById('app-toast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'app-toast';
+        toast.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.85);color:#fff;padding:8px 18px;border-radius:6px;font-size:13px;z-index:999999;transition:opacity 0.3s, transform 0.3s;pointer-events:none;box-shadow:0 4px 12px rgba(0,0,0,0.3);font-family:sans-serif;';
+        document.body.appendChild(toast);
+      }
+      toast.textContent = msg;
+      toast.style.opacity = '1';
+      toast.style.transform = 'translateX(-50%) translateY(0)';
+      clearTimeout(toast._timer);
+      toast._timer = setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(-50%) translateY(10px)';
+      }, 2500);
+    }
+
+    function saveAppState() {
+      try {
+        const optionsData = {};
+        const optContainer = document.getElementById('options');
+        if (optContainer) {
+          optContainer.querySelectorAll('input, select').forEach(el => {
+            if (el.id) {
+              optionsData[el.id] = el.value;
+            }
+          });
+        }
+
+        const state = {
+          version: 1,
+          trackerA: trackerA.getState(),
+          trackerB: trackerB.getState(),
+          gapHistory: window._getGapHistory ? window._getGapHistory() : [],
+          options: optionsData
+        };
+
+        localStorage.setItem('counter_app_state_v1', JSON.stringify(state));
+      } catch (e) {
+        console.warn('Failed to save state to localStorage:', e);
+      }
+    }
+
+    function loadAppState() {
+      try {
+        const raw = localStorage.getItem('counter_app_state_v1');
+        if (!raw) return;
+        const state = JSON.parse(raw);
+        if (!state) return;
+
+        // 1. Restore Options fields
+        if (state.options) {
+          Object.keys(state.options).forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+              el.value = state.options[id];
+              el.dispatchEvent(new Event('input'));
+              el.dispatchEvent(new Event('change'));
+            }
+          });
+        }
+
+        // 2. Restore Trackers (channels & graph histories)
+        if (state.trackerA) trackerA.setState(state.trackerA);
+        if (state.trackerB) trackerB.setState(state.trackerB);
+
+        // 3. Restore Gap History
+        if (state.gapHistory && window._setGapHistory) {
+          window._setGapHistory(state.gapHistory);
+        }
+
+        if (window._updateGap) window._updateGap();
+      } catch (e) {
+        console.warn('Failed to load state from localStorage:', e);
+      }
+    }
+
+    // Clear Graph button
+    document.getElementById('btn-clear-graph').addEventListener('click', () => {
+      trackerA.clearHistory();
+      trackerB.clearHistory();
+      if (window._clearGapHistory) window._clearGapHistory();
+      saveAppState();
+      showToast('🗑️ Graph data reset!');
+    });
+
+    // Auto-save triggers
+    window.addEventListener('beforeunload', saveAppState);
+    setInterval(saveAppState, 3000);
+    const optionsPanel = document.getElementById('options');
+    if (optionsPanel) {
+      optionsPanel.addEventListener('change', saveAppState);
+      optionsPanel.addEventListener('input', saveAppState);
+    }
+
+    // Auto-load state on initialization
+    setTimeout(loadAppState, 50);
   </script>
 </body>
 </html>
