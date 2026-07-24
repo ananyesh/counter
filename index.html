@@ -488,20 +488,23 @@
       text-align: center;
       padding: 10px 0 4px;
       font-size: 0.84rem;
-      color: #666;
+      color: #aaaaaa;
       min-height: 1.4em;
     }
     #overtake-row .overtake-label {
-      color: #555;
+      color: inherit;
+      opacity: 0.85;
       margin-right: 4px;
     }
     #overtake-row .overtake-val {
-      color: #ddd;
+      color: inherit;
       font-weight: 600;
+      opacity: 1;
     }
     #overtake-row .overtake-never {
-      color: #444;
+      color: inherit;
       font-style: italic;
+      opacity: 0.85;
     }
   </style>
 </head>
@@ -804,6 +807,11 @@
         <input type="range" id="opt-overtake-size" min="10" max="36" value="14" />
         <input type="number" id="num-overtake-size" class="opt-num" min="10" max="36" value="14" />
         <span class="opt-unit">px</span>
+      </div>
+      <div class="opt-row">
+        <label>Overtake Text Color</label>
+        <input type="color" id="opt-overtake-color" value="#aaaaaa" />
+        <input type="text" id="hex-overtake-color" class="opt-hex" value="#aaaaaa" maxlength="7" />
       </div>
     </div>
 
@@ -2249,6 +2257,10 @@
     linkSliderNum('opt-overtake-size', 'num-overtake-size', 10, 36, px => {
       const el = document.getElementById('overtake-row');
       if (el) el.style.fontSize = Math.round(px) + 'px';
+    });
+    linkColorHex('opt-overtake-color', 'hex-overtake-color', val => {
+      const el = document.getElementById('overtake-row');
+      if (el) el.style.color = val;
     });
 
     /* ════════════════════════════════════════════════════════
