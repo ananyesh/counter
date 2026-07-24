@@ -832,17 +832,13 @@
       <div class="opt-row">
         <label>Milestone Step Interval</label>
         <select id="opt-progress-step">
-          <option value="auto" selected>Auto (10% Magnitude)</option>
-          <option value="100m">100 Million (100M)</option>
-          <option value="50m">50 Million (50M)</option>
-          <option value="10m">10 Million (10M)</option>
-          <option value="5m">5 Million (5M)</option>
-          <option value="1m">1 Million (1M)</option>
-          <option value="500k">500 Thousand (500K)</option>
-          <option value="100k">100 Thousand (100K)</option>
-          <option value="50k">50 Thousand (50K)</option>
-          <option value="10k">10 Thousand (10K)</option>
-          <option value="1k">1 Thousand (1K)</option>
+          <option value="10" selected>10% Magnitude (Default)</option>
+          <option value="5">5% Magnitude</option>
+          <option value="1">1% Magnitude</option>
+          <option value="0.5">0.5% Magnitude</option>
+          <option value="0.1">0.1% Magnitude</option>
+          <option value="0.05">0.05% Magnitude</option>
+          <option value="0.01">0.01% Magnitude</option>
         </select>
       </div>
       <div class="opt-row">
@@ -2028,22 +2024,11 @@
 
       function computeMilestone(count) {
         if (!count || count <= 0) return null;
-        const stepOpt = document.getElementById('opt-progress-step')?.value || 'auto';
-        let step;
-        if (stepOpt === '100m') step = 100000000;
-        else if (stepOpt === '50m') step = 50000000;
-        else if (stepOpt === '10m') step = 10000000;
-        else if (stepOpt === '5m') step = 5000000;
-        else if (stepOpt === '1m') step = 1000000;
-        else if (stepOpt === '500k') step = 500000;
-        else if (stepOpt === '100k') step = 100000;
-        else if (stepOpt === '50k') step = 50000;
-        else if (stepOpt === '10k') step = 10000;
-        else if (stepOpt === '1k') step = 1000;
-        else {
-          const magExp = Math.floor(Math.log10(count));
-          step = Math.pow(10, magExp - 1);
-        }
+        const stepOpt = document.getElementById('opt-progress-step')?.value || '10';
+        const pctFactor = (parseFloat(stepOpt) || 10) / 100;
+        const magExp = Math.floor(Math.log10(count));
+        const mag = Math.pow(10, magExp);
+        const step = Math.max(1, mag * pctFactor);
         const nextMilestone = Math.ceil((count + 0.0001) / step) * step;
         const prevMilestone = nextMilestone - step;
         return { nextMilestone, prevMilestone, step };
