@@ -292,18 +292,16 @@
     /* ── Gain Stats ── */
     .gain-stats-wrap {
       display: flex;
-      gap: 16px 24px;
+      flex-wrap: nowrap;
+      gap: 16px;
       justify-content: center;
       align-items: center;
       margin: 10px auto 24px auto;
-      max-width: 850px;
-      flex-wrap: wrap;
+      max-width: 100%;
       padding: 0 10px;
     }
     .gain-item {
-      flex: 0 1 auto;
-      min-width: 90px;
-      padding: 4px 8px;
+      flex: 0 0 auto;
       text-align: center;
     }
     .gain-val {
@@ -313,7 +311,6 @@
       font-family: inherit;
       display: inline-block;
       white-space: nowrap;
-      padding: 0 4px;
     }
 
     /* ── Graph ── */
