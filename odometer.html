@@ -291,19 +291,19 @@
 
     /* ── Gain Stats ── */
     .gain-stats-wrap {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 12px;
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 24px;
+      justify-content: center;
       align-items: center;
       margin: 10px auto 24px auto;
       width: 100%;
-      max-width: 920px;
+      max-width: 95%;
       padding: 0 10px;
     }
     .gain-item {
+      flex: 0 0 auto;
       text-align: center;
-      min-width: 0;
-      overflow: hidden;
     }
     .gain-val {
       font-size: 1rem;
@@ -312,7 +312,6 @@
       font-family: inherit;
       display: inline-block;
       white-space: nowrap;
-      max-width: 100%;
     }
 
     /* ── Graph ── */
@@ -918,6 +917,13 @@
         </select>
       </div>
       <div class="opt-row">
+        <label>Gain Number Format</label>
+        <select id="opt-gain-format">
+          <option value="full" selected>Full (+20,841,478)</option>
+          <option value="compact">Compact (+20.84M)</option>
+        </select>
+      </div>
+      <div class="opt-row">
         <label>Gains Number Color</label>
         <input type="color" id="opt-gain-color" value="#11ff00" />
         <input type="text" id="hex-gain-color" class="opt-hex" value="#11ff00" maxlength="7" />
@@ -1511,7 +1517,15 @@
 
       function updateGainStats() {
         const { sec, min, hr, day } = calculateRollingGains();
+        const fmtType = document.getElementById('opt-gain-format')?.value || 'full';
         function fmt(n) {
+          if (fmtType === 'compact') {
+            const absN = Math.abs(n);
+            const sign = n > 0 ? '+' : (n < 0 ? '-' : '+');
+            if (absN >= 1e9) return sign + (absN / 1e9).toFixed(2).replace(/\.?0+$/, '') + 'B';
+            if (absN >= 1e6) return sign + (absN / 1e6).toFixed(2).replace(/\.?0+$/, '') + 'M';
+            if (absN >= 1e3) return sign + (absN / 1e3).toFixed(1).replace(/\.?0+$/, '') + 'K';
+          }
           if (n > 0) return '+' + n.toLocaleString();
           if (n < 0) return n.toLocaleString();
           return '+0';
@@ -2501,6 +2515,12 @@
     linkSliderNum('opt-gain-size', 'num-gain-size', 10, 36, px => {
       document.querySelectorAll('.gain-val').forEach(el => el.style.fontSize = Math.round(px) + 'px');
     });
+    const gainFmtSelect = document.getElementById('opt-gain-format');
+    if (gainFmtSelect) {
+      ['change', 'input'].forEach(evt => {
+        gainFmtSelect.addEventListener(evt, () => allTrackers.forEach(t => t.updateGainStats()));
+      });
+    }
 
     // Progress Bar Options
     const showProgressSelect = document.getElementById('opt-show-progress');
@@ -2635,6 +2655,7 @@
     initCustomSelect('opt-graph-theme');
     initCustomSelect('opt-show-progress');
     initCustomSelect('opt-progress-step');
+    initCustomSelect('opt-gain-format');
 
     /* ════════════════════════════════════════════════════════
        RESIZE
