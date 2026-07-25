@@ -551,6 +551,8 @@
       <div class="tracker-search" id="search-a">
         <select id="type-a">
           <option value="roblox">Roblox Group</option>
+          <option value="roblox-game-visits">Roblox Game (Visits)</option>
+          <option value="roblox-game-players">Roblox Game (Active Players)</option>
           <option value="youtube">YouTube Channel (Mixerno)</option>
           <option value="youtube-sctools">YouTube Channel (SCTools)</option>
           <option value="tiktok">TikTok Account</option>
@@ -603,6 +605,8 @@
       <div class="tracker-search" id="search-b">
         <select id="type-b">
           <option value="roblox">Roblox Group</option>
+          <option value="roblox-game-visits">Roblox Game (Visits)</option>
+          <option value="roblox-game-players">Roblox Game (Active Players)</option>
           <option value="youtube" selected>YouTube Channel (Mixerno)</option>
           <option value="youtube-sctools">YouTube Channel (SCTools)</option>
           <option value="tiktok">TikTok Account</option>
@@ -1303,6 +1307,23 @@
       };
     }
 
+    async function fetchRobloxGame(placeId, metric) {
+      let cleanId = placeId.trim();
+      const res = await fetch(`https://mixerno.space/api/roblox-game-counter/user/${cleanId}`, { cache: 'no-store' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      const countObj  = data.counts && data.counts.find(c => c.value === metric);
+      const nameObj   = data.user   && data.user.find(u => u.value === 'name');
+      const pfpObj    = data.user   && data.user.find(u => u.value === 'pfp');
+      const bannerObj = data.user   && data.user.find(u => u.value === 'banner');
+      return {
+        count:  countObj  ? Number(countObj.count) : null,
+        name:   nameObj   ? nameObj.count           : '',
+        pfp:    pfpObj    ? pfpObj.count            : '',
+        banner: bannerObj ? bannerObj.count         : '',
+      };
+    }
+
     async function fetchYoutube(channelId) {
       const res  = await fetch(`https://backend.mixerno.space/api/youtube/estv3/${channelId}`, { cache: 'no-store' });
       if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -1512,6 +1533,10 @@
             fetchFn = fetchYoutube;
           } else if (trackedType === 'youtube-sctools') {
             fetchFn = fetchYoutubeSctools;
+          } else if (trackedType === 'roblox-game-visits') {
+            fetchFn = id => fetchRobloxGame(id, 'visits');
+          } else if (trackedType === 'roblox-game-players') {
+            fetchFn = id => fetchRobloxGame(id, 'players');
           } else if (trackedType === 'tiktok') {
             fetchFn = fetchTiktok;
           } else if (trackedType === 'instagram') {
@@ -1571,6 +1596,8 @@
               bannerWrap.style.background = 'linear-gradient(135deg, #2b0000 0%, #8b0000 100%)';
             } else if (trackedType === 'twitter') {
               bannerWrap.style.background = 'linear-gradient(135deg, #1DA1F2 0%, #0d8ecf 100%)';
+            } else if (trackedType === 'roblox-game-visits' || trackedType === 'roblox-game-players') {
+              bannerWrap.style.background = 'linear-gradient(135deg, #00A2FF 0%, #0066CC 100%)';
             } else {
               bannerWrap.style.background = 'linear-gradient(135deg, #111 0%, #333 100%)';
             }
@@ -1672,6 +1699,8 @@
           inputEl.placeholder = "Channel ID";
         } else if (val === 'roblox') {
           inputEl.placeholder = "Group ID";
+        } else if (val === 'roblox-game-visits' || val === 'roblox-game-players') {
+          inputEl.placeholder = "Game ID (e.g. 9584852943)";
         } else if (val === 'tiktok') {
           inputEl.placeholder = "Username (e.g. lamine.yamal)";
         } else if (val === 'instagram') {
