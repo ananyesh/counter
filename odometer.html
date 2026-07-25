@@ -291,18 +291,16 @@
 
     /* ── Gain Stats ── */
     .gain-stats-wrap {
-      display: flex;
-      flex-wrap: nowrap;
-      gap: 24px;
-      justify-content: center;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
       align-items: center;
       margin: 10px auto 24px auto;
       width: 100%;
-      max-width: 95%;
+      max-width: 820px;
       padding: 0 10px;
     }
     .gain-item {
-      flex: 0 0 auto;
       text-align: center;
     }
     .gain-val {
