@@ -291,20 +291,19 @@
 
     /* ── Gain Stats ── */
     .gain-stats-wrap {
-      display: flex;
-      flex-wrap: nowrap;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 12px;
-      justify-content: space-between;
       align-items: center;
       margin: 10px auto 24px auto;
       width: 100%;
-      max-width: 760px;
+      max-width: 920px;
       padding: 0 10px;
     }
     .gain-item {
-      flex: 1 1 0;
-      min-width: 0;
       text-align: center;
+      min-width: 0;
+      overflow: hidden;
     }
     .gain-val {
       font-size: 1rem;
@@ -313,6 +312,7 @@
       font-family: inherit;
       display: inline-block;
       white-space: nowrap;
+      max-width: 100%;
     }
 
     /* ── Graph ── */
