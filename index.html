@@ -1121,8 +1121,15 @@
       }
 
       function applyFont(font) {
+        const fontSel = document.getElementById('opt-font');
+        const isYtRealtime = fontSel && fontSel.selectedOptions[0] && fontSel.selectedOptions[0].textContent.includes('Akshat Mittal');
+        const weight = isYtRealtime ? '300' : '700';
         odoEl.style.fontFamily = font;
-        odoEl.querySelectorAll('.odo-strip span, .odo-sep').forEach(el => { el.style.fontFamily = font; });
+        odoEl.style.fontWeight = weight;
+        odoEl.querySelectorAll('.odo-strip span, .odo-sep').forEach(el => {
+          el.style.fontFamily = font;
+          el.style.fontWeight = weight;
+        });
       }
 
       function rebuildWithSize(newDigitH, savedCount) {
@@ -2282,17 +2289,38 @@
     }
 
     function applyFontAll(font) {
+      const fontSel = document.getElementById('opt-font');
+      const isYtRealtime = fontSel && fontSel.selectedOptions[0] && fontSel.selectedOptions[0].textContent.includes('Akshat Mittal');
+      const weight = isYtRealtime ? '300' : '700';
+
       document.body.style.fontFamily = font;
       allTrackers.forEach(t => t.odo.applyFont(font));
-      document.querySelectorAll('.entity-name').forEach(el => el.style.fontFamily = font);
+      document.querySelectorAll('.entity-name').forEach(el => {
+        el.style.fontFamily = font;
+        el.style.fontWeight = isYtRealtime ? '400' : '700';
+      });
     }
 
     function applyGapFont(font) {
+      const gapFontSel = document.getElementById('opt-gap-font');
+      const isYtRealtime = gapFontSel && gapFontSel.selectedOptions[0] && gapFontSel.selectedOptions[0].textContent.includes('Akshat Mittal');
+      const weight = isYtRealtime ? '300' : '700';
+
       if (window._applyGapFont) window._applyGapFont(font);
+      const gapOdoRow = document.getElementById('odometer-gap');
+      if (gapOdoRow) {
+        gapOdoRow.querySelectorAll('.odo-strip span, .odo-sep').forEach(el => {
+          el.style.fontFamily = font;
+          el.style.fontWeight = weight;
+        });
+      }
       const gapHero = document.getElementById('gap-hero-text');
       if (gapHero) gapHero.style.fontFamily = font;
       const gapSign = document.getElementById('gap-sign');
-      if (gapSign) gapSign.style.fontFamily = font;
+      if (gapSign) {
+        gapSign.style.fontFamily = font;
+        gapSign.style.fontWeight = weight;
+      }
     }
 
     /* ════════════════════════════════════════════════════════
