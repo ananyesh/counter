@@ -1127,9 +1127,9 @@
         const isYtRealtime = font.includes('Roboto-Light') || (fontSel && fontSel.selectedOptions[0] && fontSel.selectedOptions[0].textContent.includes('Akshat Mittal'));
         const weight = isYtRealtime ? '300' : '700';
         const cleanFont = font.replace("'Roboto-Light', ", "");
-        const digitW      = isYtRealtime ? 'calc(var(--digit-h) * 0.37)' : 'calc(var(--digit-h) * 0.58)';
+        const digitW      = isYtRealtime ? 'calc(var(--digit-h) * 0.41)' : 'calc(var(--digit-h) * 0.58)';
         const sepW        = isYtRealtime ? 'auto' : 'calc(var(--digit-h) * 0.24)';
-        const sepMargin   = isYtRealtime ? '0 -2px' : '0 2px';
+        const sepMargin   = isYtRealtime ? '0 1px' : '0 2px';
         const sepPadding  = '0';
 
         odoEl.style.fontFamily = cleanFont;
@@ -2326,9 +2326,9 @@
       const isYtRealtime = font.includes('Roboto-Light') || (gapFontSel && gapFontSel.selectedOptions[0] && gapFontSel.selectedOptions[0].textContent.includes('Akshat Mittal'));
       const weight = isYtRealtime ? '300' : '700';
       const cleanFont = font.replace("'Roboto-Light', ", "");
-      const digitW      = isYtRealtime ? 'calc(var(--digit-h) * 0.37)' : 'calc(var(--digit-h) * 0.58)';
+      const digitW      = isYtRealtime ? 'calc(var(--digit-h) * 0.41)' : 'calc(var(--digit-h) * 0.58)';
       const sepW        = isYtRealtime ? 'auto' : 'calc(var(--digit-h) * 0.24)';
-      const sepMargin   = isYtRealtime ? '0 -2px' : '0 2px';
+      const sepMargin   = isYtRealtime ? '0 1px' : '0 2px';
       const sepPadding  = '0';
 
       if (window._applyGapFont) window._applyGapFont(font);
