@@ -1849,6 +1849,7 @@
         getFetchTimer: () => fetchTimer,
         setFetchTimer: (t) => fetchTimer = t,
         setOnUpdate: (fn) => { onUpdateCb = fn; },
+        updateGainStats,
         reschedule: () => {
           if (trackedId && fetchTimer) {
             clearTimeout(fetchTimer);
@@ -2581,7 +2582,11 @@
     const gainFmtSelect = document.getElementById('opt-gain-format');
     if (gainFmtSelect) {
       ['change', 'input'].forEach(evt => {
-        gainFmtSelect.addEventListener(evt, () => allTrackers.forEach(t => t.updateGainStats()));
+        gainFmtSelect.addEventListener(evt, () => {
+          allTrackers.forEach(t => {
+            if (t && typeof t.updateGainStats === 'function') t.updateGainStats();
+          });
+        });
       });
     }
 
