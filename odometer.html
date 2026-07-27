@@ -1127,9 +1127,21 @@
         const isYtRealtime = font.includes('Roboto-Light') || (fontSel && fontSel.selectedOptions[0] && fontSel.selectedOptions[0].textContent.includes('Akshat Mittal'));
         const weight = isYtRealtime ? '300' : '700';
         const cleanFont = font.replace("'Roboto-Light', ", "");
+        const digitW = isYtRealtime ? 'calc(var(--digit-h) * 0.48)' : 'calc(var(--digit-h) * 0.58)';
+        const sepW   = isYtRealtime ? 'calc(var(--digit-h) * 0.16)' : 'calc(var(--digit-h) * 0.24)';
+
         odoEl.style.fontFamily = cleanFont;
         odoEl.style.fontWeight = weight;
-        odoEl.querySelectorAll('.odo-strip span, .odo-sep, .odo-digit').forEach(el => {
+
+        odoEl.querySelectorAll('.odo-digit').forEach(el => {
+          el.style.width = digitW;
+        });
+        odoEl.querySelectorAll('.odo-sep').forEach(el => {
+          el.style.width = sepW;
+          el.style.fontFamily = cleanFont;
+          el.style.fontWeight = weight;
+        });
+        odoEl.querySelectorAll('.odo-strip span').forEach(el => {
           el.style.fontFamily = cleanFont;
           el.style.fontWeight = weight;
         });
@@ -2294,15 +2306,6 @@
     function applyFontAll(font) {
       const fontSel = document.getElementById('opt-font');
       const isYtRealtime = font.includes('Roboto-Light') || (fontSel && fontSel.selectedOptions[0] && fontSel.selectedOptions[0].textContent.includes('Akshat Mittal'));
-      const weight = isYtRealtime ? '300' : '700';
-
-      if (isYtRealtime) {
-        document.documentElement.style.setProperty('--digit-w-ratio', '0.48');
-        document.documentElement.style.setProperty('--sep-w-ratio', '0.16');
-      } else {
-        document.documentElement.style.setProperty('--digit-w-ratio', '0.58');
-        document.documentElement.style.setProperty('--sep-w-ratio', '0.24');
-      }
 
       document.body.style.fontFamily = font;
       allTrackers.forEach(t => t.odo.applyFont(font));
@@ -2314,22 +2317,33 @@
 
     function applyGapFont(font) {
       const gapFontSel = document.getElementById('opt-gap-font');
-      const isYtRealtime = gapFontSel && gapFontSel.selectedOptions[0] && gapFontSel.selectedOptions[0].textContent.includes('Akshat Mittal');
+      const isYtRealtime = font.includes('Roboto-Light') || (gapFontSel && gapFontSel.selectedOptions[0] && gapFontSel.selectedOptions[0].textContent.includes('Akshat Mittal'));
       const weight = isYtRealtime ? '300' : '700';
+      const cleanFont = font.replace("'Roboto-Light', ", "");
+      const digitW = isYtRealtime ? 'calc(var(--digit-h) * 0.48)' : 'calc(var(--digit-h) * 0.58)';
+      const sepW   = isYtRealtime ? 'calc(var(--digit-h) * 0.16)' : 'calc(var(--digit-h) * 0.24)';
 
       if (window._applyGapFont) window._applyGapFont(font);
       const gapOdoRow = document.getElementById('odometer-gap');
       if (gapOdoRow) {
-        gapOdoRow.querySelectorAll('.odo-strip span, .odo-sep').forEach(el => {
-          el.style.fontFamily = font;
+        gapOdoRow.querySelectorAll('.odo-digit').forEach(el => {
+          el.style.width = digitW;
+        });
+        gapOdoRow.querySelectorAll('.odo-sep').forEach(el => {
+          el.style.width = sepW;
+          el.style.fontFamily = cleanFont;
+          el.style.fontWeight = weight;
+        });
+        gapOdoRow.querySelectorAll('.odo-strip span').forEach(el => {
+          el.style.fontFamily = cleanFont;
           el.style.fontWeight = weight;
         });
       }
       const gapHero = document.getElementById('gap-hero-text');
-      if (gapHero) gapHero.style.fontFamily = font;
+      if (gapHero) gapHero.style.fontFamily = cleanFont;
       const gapSign = document.getElementById('gap-sign');
       if (gapSign) {
-        gapSign.style.fontFamily = font;
+        gapSign.style.fontFamily = cleanFont;
         gapSign.style.fontWeight = weight;
       }
     }
