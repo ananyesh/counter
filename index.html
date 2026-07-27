@@ -7,8 +7,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Inter:wght@400;700&family=Outfit:wght@400;700&family=Montserrat:wght@400;700&family=Ubuntu:wght@400;700&family=Noto+Serif:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --digit-h:   80px;
-      --odo-anim:  0.45s;
+      --digit-h:       80px;
+      --digit-w-ratio: 0.58;
+      --sep-w-ratio:   0.24;
+      --odo-anim:      0.45s;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -245,8 +247,8 @@
     }
 
     .odo-digit {
-      /* Exact SocialBlade digit ratio */
-      width: calc(var(--digit-h) * 0.58);
+      /* Dynamic digit ratio */
+      width: calc(var(--digit-h) * var(--digit-w-ratio, 0.58));
       height: var(--digit-h);
       overflow: hidden;
       position: relative;
@@ -274,18 +276,18 @@
       font-feature-settings: "tnum" 1;
     }
 
-    /* comma / thousand separator — SocialBlade exact spacing */
+    /* comma / thousand separator */
     .odo-sep {
       display: flex;
       align-items: flex-end;
       justify-content: center;
-      width: calc(var(--digit-h) * 0.24);
+      width: calc(var(--digit-h) * var(--sep-w-ratio, 0.24));
       height: var(--digit-h);
       font-size: calc(var(--digit-h) * 0.92);
       font-weight: inherit;
       color: #fff;
       padding-bottom: calc(var(--digit-h) * 0.05);
-      margin: 0 2px;
+      margin: 0 1px;
       flex-shrink: 0;
     }
 
@@ -2291,8 +2293,16 @@
 
     function applyFontAll(font) {
       const fontSel = document.getElementById('opt-font');
-      const isYtRealtime = fontSel && fontSel.selectedOptions[0] && fontSel.selectedOptions[0].textContent.includes('Akshat Mittal');
+      const isYtRealtime = font.includes('Roboto-Light') || (fontSel && fontSel.selectedOptions[0] && fontSel.selectedOptions[0].textContent.includes('Akshat Mittal'));
       const weight = isYtRealtime ? '300' : '700';
+
+      if (isYtRealtime) {
+        document.documentElement.style.setProperty('--digit-w-ratio', '0.48');
+        document.documentElement.style.setProperty('--sep-w-ratio', '0.16');
+      } else {
+        document.documentElement.style.setProperty('--digit-w-ratio', '0.58');
+        document.documentElement.style.setProperty('--sep-w-ratio', '0.24');
+      }
 
       document.body.style.fontFamily = font;
       allTrackers.forEach(t => t.odo.applyFont(font));
