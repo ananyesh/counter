@@ -1127,9 +1127,10 @@
         const isYtRealtime = font.includes('Roboto-Light') || (fontSel && fontSel.selectedOptions[0] && fontSel.selectedOptions[0].textContent.includes('Akshat Mittal'));
         const weight = isYtRealtime ? '300' : '700';
         const cleanFont = font.replace("'Roboto-Light', ", "");
-        const digitW    = isYtRealtime ? 'calc(var(--digit-h) * 0.50)' : 'calc(var(--digit-h) * 0.58)';
-        const sepW      = isYtRealtime ? 'calc(var(--digit-h) * 0.18)' : 'calc(var(--digit-h) * 0.24)';
-        const sepMargin = isYtRealtime ? '0 2px' : '0 2px';
+        const digitW      = isYtRealtime ? 'calc(var(--digit-h) * 0.44)' : 'calc(var(--digit-h) * 0.58)';
+        const sepW        = isYtRealtime ? 'auto' : 'calc(var(--digit-h) * 0.24)';
+        const sepMargin   = isYtRealtime ? '0 1px' : '0 2px';
+        const sepPadding  = isYtRealtime ? '0 1px' : '0';
 
         odoEl.style.fontFamily = cleanFont;
         odoEl.style.fontWeight = weight;
@@ -1140,6 +1141,8 @@
         odoEl.querySelectorAll('.odo-sep').forEach(el => {
           el.style.width = sepW;
           el.style.margin = sepMargin;
+          el.style.paddingLeft = sepPadding;
+          el.style.paddingRight = sepPadding;
           el.style.fontFamily = cleanFont;
           el.style.fontWeight = weight;
         });
@@ -2322,9 +2325,10 @@
       const isYtRealtime = font.includes('Roboto-Light') || (gapFontSel && gapFontSel.selectedOptions[0] && gapFontSel.selectedOptions[0].textContent.includes('Akshat Mittal'));
       const weight = isYtRealtime ? '300' : '700';
       const cleanFont = font.replace("'Roboto-Light', ", "");
-      const digitW    = isYtRealtime ? 'calc(var(--digit-h) * 0.50)' : 'calc(var(--digit-h) * 0.58)';
-      const sepW      = isYtRealtime ? 'calc(var(--digit-h) * 0.18)' : 'calc(var(--digit-h) * 0.24)';
-      const sepMargin = isYtRealtime ? '0 2px' : '0 2px';
+      const digitW      = isYtRealtime ? 'calc(var(--digit-h) * 0.44)' : 'calc(var(--digit-h) * 0.58)';
+      const sepW        = isYtRealtime ? 'auto' : 'calc(var(--digit-h) * 0.24)';
+      const sepMargin   = isYtRealtime ? '0 1px' : '0 2px';
+      const sepPadding  = isYtRealtime ? '0 1px' : '0';
 
       if (window._applyGapFont) window._applyGapFont(font);
       const gapOdoRow = document.getElementById('odometer-gap');
@@ -2335,6 +2339,8 @@
         gapOdoRow.querySelectorAll('.odo-sep').forEach(el => {
           el.style.width = sepW;
           el.style.margin = sepMargin;
+          el.style.paddingLeft = sepPadding;
+          el.style.paddingRight = sepPadding;
           el.style.fontFamily = cleanFont;
           el.style.fontWeight = weight;
         });
