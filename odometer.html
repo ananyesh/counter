@@ -937,7 +937,7 @@
         <span class="opt-unit">px</span>
       </div>
       <div style="padding: 12px 0 4px; text-align: center; font-size: 11px; color: #888; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 15px;">
-        Build Version: <strong style="color:#00ff88;">v1.3.1 (Digit Spacing Fix)</strong>
+        Build Version: <strong style="color:#00ff88;">v1.3.2 (Comma Baseline Shift)</strong>
       </div>
     </div>
 
@@ -1146,6 +1146,8 @@
           el.style.margin = sepMargin;
           el.style.paddingLeft = sepPadding;
           el.style.paddingRight = sepPadding;
+          el.style.paddingBottom = isYtRealtime ? '0px' : 'calc(var(--digit-h) * 0.05)';
+          el.style.transform = isYtRealtime ? 'translateY(6px)' : 'none';
           el.style.fontFamily = cleanFont;
           el.style.fontWeight = weight;
         });
@@ -2345,6 +2347,8 @@
           el.style.margin = sepMargin;
           el.style.paddingLeft = sepPadding;
           el.style.paddingRight = sepPadding;
+          el.style.paddingBottom = isYtRealtime ? '0px' : 'calc(var(--digit-h) * 0.05)';
+          el.style.transform = isYtRealtime ? 'translateY(6px)' : 'none';
           el.style.fontFamily = cleanFont;
           el.style.fontWeight = weight;
         });
