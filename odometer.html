@@ -936,6 +936,9 @@
         <input type="number" id="num-gain-size" class="opt-num" min="10" max="36" value="16" />
         <span class="opt-unit">px</span>
       </div>
+      <div style="padding: 12px 0 4px; text-align: center; font-size: 11px; color: #888; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 15px;">
+        Build Version: <strong style="color:#00ff88;">v1.3.1 (Digit Spacing Fix)</strong>
+      </div>
     </div>
 
   </div><!-- /options -->
@@ -1127,10 +1130,10 @@
         const isYtRealtime = font.includes('Roboto-Light') || (fontSel && fontSel.selectedOptions[0] && fontSel.selectedOptions[0].textContent.includes('Akshat Mittal'));
         const weight = isYtRealtime ? '300' : '700';
         const cleanFont = font.replace("'Roboto-Light', ", "");
-        const digitW      = isYtRealtime ? 'calc(var(--digit-h) * 0.41)' : 'calc(var(--digit-h) * 0.58)';
+        const digitW      = isYtRealtime ? 'calc(var(--digit-h) * 0.48)' : 'calc(var(--digit-h) * 0.58)';
         const sepW        = isYtRealtime ? 'auto' : 'calc(var(--digit-h) * 0.24)';
-        const sepMargin   = isYtRealtime ? '0 1px' : '0 2px';
-        const sepPadding  = '0';
+        const sepMargin   = isYtRealtime ? '0 3px' : '0 2px';
+        const sepPadding  = isYtRealtime ? '0 1px' : '0';
 
         odoEl.style.fontFamily = cleanFont;
         odoEl.style.fontWeight = weight;
@@ -2326,10 +2329,10 @@
       const isYtRealtime = font.includes('Roboto-Light') || (gapFontSel && gapFontSel.selectedOptions[0] && gapFontSel.selectedOptions[0].textContent.includes('Akshat Mittal'));
       const weight = isYtRealtime ? '300' : '700';
       const cleanFont = font.replace("'Roboto-Light', ", "");
-      const digitW      = isYtRealtime ? 'calc(var(--digit-h) * 0.41)' : 'calc(var(--digit-h) * 0.58)';
+      const digitW      = isYtRealtime ? 'calc(var(--digit-h) * 0.48)' : 'calc(var(--digit-h) * 0.58)';
       const sepW        = isYtRealtime ? 'auto' : 'calc(var(--digit-h) * 0.24)';
-      const sepMargin   = isYtRealtime ? '0 1px' : '0 2px';
-      const sepPadding  = '0';
+      const sepMargin   = isYtRealtime ? '0 3px' : '0 2px';
+      const sepPadding  = isYtRealtime ? '0 1px' : '0';
 
       if (window._applyGapFont) window._applyGapFont(font);
       const gapOdoRow = document.getElementById('odometer-gap');
