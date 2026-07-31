@@ -15,13 +15,45 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
+    html {
+      height: 100%;
+      overflow-y: auto !important;
+      overflow-x: hidden;
+    }
+
     body {
       background: #0f0f0f;
       color: #fff;
       font-family: 'Roboto', 'Arial', sans-serif;
       min-height: 100vh;
       padding: 20px;
+      overflow-y: auto !important;
       overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* Webkit Scrollbars for OBS & Browsers */
+    html::-webkit-scrollbar, body::-webkit-scrollbar {
+      width: 10px;
+    }
+    html::-webkit-scrollbar-track, body::-webkit-scrollbar-track {
+      background: #0f0f0f;
+    }
+    html::-webkit-scrollbar-thumb, body::-webkit-scrollbar-thumb {
+      background: #333;
+      border-radius: 5px;
+    }
+    html::-webkit-scrollbar-thumb:hover, body::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
+
+    /* OBS Stream Mode */
+    body.obs-mode #top-controls,
+    body.obs-mode .tracker-search {
+      display: none !important;
+    }
+    body.obs-mode {
+      padding: 10px !important;
     }
 
     /* ── Top Controls ── */
@@ -541,7 +573,11 @@
   <!-- Top Controls -->
   <div id="top-controls">
     <button id="hide-ui-btn" title="Hide UI controls (Press 'H' to toggle back)">Hide UI (H)</button>
+    <button id="obs-mode-btn" title="OBS Stream Mode: Hides search inputs so live counters fit automatically on stream">🎥 OBS Mode</button>
   </div>
+
+  <!-- Floating Exit OBS Mode Button -->
+  <div id="exit-obs-btn" style="display:none; position:fixed; bottom:15px; right:15px; z-index:999999; background:rgba(0,0,0,0.85); color:#00ff88; border:1px solid #00ff88; padding:8px 16px; border-radius:6px; cursor:pointer; font-size:13px; font-weight:bold; box-shadow:0 4px 12px rgba(0,0,0,0.5);">Exit OBS Mode (Esc)</div>
 
   <!-- Main Comparison Wrap -->
   <div id="compare-wrap">
@@ -937,7 +973,7 @@
         <span class="opt-unit">px</span>
       </div>
       <div style="padding: 12px 0 4px; text-align: center; font-size: 11px; color: #888; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 15px;">
-        Build Version: <strong style="color:#00ff88;">v1.3.2 (Comma Baseline Shift)</strong>
+        Build Version: <strong style="color:#00ff88;">v1.4.0 (OBS Stream & Scroll Fix)</strong>
       </div>
     </div>
 
@@ -2660,6 +2696,35 @@
       const active = document.activeElement;
       const isInput = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.tagName === 'SELECT');
       if (!isInput && (e.key === 'h' || e.key === 'H')) toggleUI();
+    });
+
+    /* ════════════════════════════════════════════════════════
+       OBS STREAM MODE & AUTOMATIC URL QUERY SUPPORT
+    ════════════════════════════════════════════════════════ */
+    function toggleObsMode(enable) {
+      const isObs = (enable !== undefined) ? enable : !document.body.classList.contains('obs-mode');
+      document.body.classList.toggle('obs-mode', isObs);
+      const exitBtn = document.getElementById('exit-obs-btn');
+      if (exitBtn) exitBtn.style.display = isObs ? 'block' : 'none';
+    }
+
+    const obsBtn = document.getElementById('obs-mode-btn');
+    if (obsBtn) obsBtn.addEventListener('click', () => toggleObsMode(true));
+
+    const exitObsBtn = document.getElementById('exit-obs-btn');
+    if (exitObsBtn) exitObsBtn.addEventListener('click', () => toggleObsMode(false));
+
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('obs') === 'true' || urlParams.get('clean') === 'true' || urlParams.get('hideUI') === 'true') {
+      toggleObsMode(true);
+    }
+
+    document.addEventListener('keydown', e => {
+      const active = document.activeElement;
+      const isInput = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.tagName === 'SELECT');
+      if (!isInput && e.key === 'Escape' && document.body.classList.contains('obs-mode')) {
+        toggleObsMode(false);
+      }
     });
 
     /* Custom Select Component for OBS browser source compatibility */
