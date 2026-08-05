@@ -851,6 +851,13 @@
         </select>
       </div>
       <div class="opt-row">
+        <label>Y-Axis Scaling</label>
+        <select id="opt-graph-yaxis">
+          <option value="smooth" selected>Continuous (Smooth)</option>
+          <option value="stepped">Stepped (Jumps on Reach)</option>
+        </select>
+      </div>
+      <div class="opt-row">
         <label>Graph Data Points</label>
         <input type="range" id="opt-points" min="5" max="24000" value="30" />
         <input type="number" id="num-points" class="opt-num" min="5" max="24000" value="30" />
@@ -973,7 +980,7 @@
         <span class="opt-unit">px</span>
       </div>
       <div style="padding: 12px 0 4px; text-align: center; font-size: 11px; color: #888; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 15px;">
-        Build Version: <strong style="color:#00ff88;">v1.4.0 (OBS Stream & Scroll Fix)</strong>
+        Build Version: <strong style="color:#00ff88;">v1.5.0 (Stepped Y-Axis Scaling)</strong>
       </div>
     </div>
 
@@ -1218,10 +1225,28 @@
 
       if (historyArr.length < 2) return;
 
+      const yAxisMode = document.getElementById('opt-graph-yaxis')?.value || 'smooth';
       const slice = historyArr.slice(-maxPoints);
       const vals  = slice.map(p => p.v);
-      const min   = Math.min(...vals);
-      const max   = Math.max(...vals);
+      const minVal = Math.min(...vals);
+      const maxVal = Math.max(...vals);
+
+      let min = minVal;
+      let max = maxVal;
+
+      if (yAxisMode === 'stepped') {
+        const diff = Math.max(1, maxVal - minVal);
+        const exponent = Math.floor(Math.log10(diff));
+        let step = Math.pow(10, exponent);
+        if (diff / step <= 2) step /= 2;
+        else if (diff / step >= 5) step *= 2;
+        if (step < 1) step = 1;
+
+        min = Math.floor(minVal / step) * step;
+        max = Math.ceil(maxVal / step) * step;
+        if (max === min) max = min + step;
+      }
+
       const range = max - min || 1;
 
       const isLight = (theme === 'light');
@@ -2594,8 +2619,14 @@
       if (window._drawGapGraph) window._drawGapGraph();
     }
     ['change', 'input'].forEach(evt => themeSelect.addEventListener(evt, handleThemeChange));
-    ['opt-graph-fill', 'opt-graph-dots'].forEach(id => {
-      ['change', 'input'].forEach(evt => document.getElementById(id).addEventListener(evt, () => allTrackers.forEach(t => t.drawGraph())));
+    ['opt-graph-fill', 'opt-graph-dots', 'opt-graph-yaxis'].forEach(id => {
+      ['change', 'input'].forEach(evt => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener(evt, () => {
+          allTrackers.forEach(t => t.drawGraph());
+          if (window._drawGapGraph) window._drawGapGraph();
+        });
+      });
     });
 
     // Gains Display Options
@@ -2794,6 +2825,7 @@
     initCustomSelect('opt-font');
     initCustomSelect('opt-gap-font');
     initCustomSelect('opt-graph-theme');
+    initCustomSelect('opt-graph-yaxis');
     initCustomSelect('opt-show-progress');
     initCustomSelect('opt-progress-step');
     initCustomSelect('opt-gain-format');
